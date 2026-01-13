@@ -1,0 +1,6 @@
+Au moins 4 types de graphiques différents et une carte, adaptés à la problématique
+• Paramétrage pertinent pour que les dataviz soient claires et informatives (légendes,
+annotations, axes, titre, couleurs…)
+• Présentation et commentaires adaptés pour faciliter la lecture
+• Bonus « sortie de votre zone de confort » / créativité
+
