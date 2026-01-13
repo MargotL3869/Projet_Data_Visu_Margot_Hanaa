@@ -3,6 +3,7 @@ Au moins 4 types de graphiques différents et une carte, adaptés à la problém
 annotations, axes, titre, couleurs…)
 • Présentation et commentaires adaptés pour faciliter la lecture
 • Bonus « sortie de votre zone de confort » / créativité
+streamlit
 
 Problematique choisie :
 Visualiser l'accélération du réchauffement climatique en France métropolitaine de 1950 à 1974 :
