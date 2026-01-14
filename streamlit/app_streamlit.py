@@ -25,7 +25,7 @@ def load_data():
     Charge les données une seule fois pour optimiser les performances.
     Renvoie le DataFrame journalier et le DataArray mensuel pour la carte.
     """
-    file_path = "donnees_carte_35ans_journalier.nc"
+    file_path = "TP/donnees_carte_35ans_journalier.nc"
 
     if not os.path.exists(file_path):
         return None, None, None
