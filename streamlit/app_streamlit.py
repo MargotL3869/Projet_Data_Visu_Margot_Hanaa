@@ -3,6 +3,8 @@ import pandas as pd
 import xarray as xr
 import plotly.express as px
 import os
+from pathlib import Path
+
 
 # ==========================================
 # 1. CONFIGURATION DE LA PAGE
@@ -25,9 +27,13 @@ def load_data():
     Charge les données une seule fois pour optimiser les performances.
     Renvoie le DataFrame journalier et le DataArray mensuel pour la carte.
     """
-    file_path = "TP/donnees_carte_35ans_journalier.nc"
+    BASE_DIR = Path(__file__).resolve().parent
+    file_path = BASE_DIR.parent / "donnees_carte_35ans_journalier.nc"
 
-    if not os.path.exists(file_path):
+
+    # @st.cache_resource
+    def load_data(path: Path):
+      if not path.exists():
         return None, None, None
 
     # Chargement NetCDF
