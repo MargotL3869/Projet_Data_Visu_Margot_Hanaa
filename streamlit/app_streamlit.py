@@ -11,7 +11,7 @@ from pathlib import Path
 st.set_page_config(layout="wide", page_title="Climat 1950-1984")
 
 st.title("Visualiser l'accélération du réchauffement climatique en France métropolitaine de 1950 à 1984")
-st.subheader("Problématique : Des moyennes annuelles aux réalités locales")
+st.subheader("Problématique : Comment le réchauffement climatique se manifeste-t-il en France métropolitaine entre 1950 et 1984, depuis les tendances moyennes globales jusqu’aux variations saisonnières")
 
 st.markdown("""
 Cette application a pour but d'analyser l'évolution du climat sur 35 ans.
@@ -255,6 +255,9 @@ if df_france is not None:
         st.write("Ce graphique regroupe les températures par tranches de 10 ans. La ligne au milieu de la boîte représente la médiane. Si les boîtes se décalent vers le haut de gauche à droite, c'est le signe d'un réchauffement.")
 
         st.info("**Apport à la problématique :** Cela permet de valider l'accélération du phénomène. On cherche à vérifier si la 'normale' des années 80 est visiblement plus élevée que celle des années 50, en isolant les variations saisonnières.")
+
+
+
     # -------------------------------------------------------
     # ONGLET 6 : CARTE ANIMÉE
     # -------------------------------------------------------
