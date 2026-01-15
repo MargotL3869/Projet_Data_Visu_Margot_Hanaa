@@ -6,5 +6,5 @@ annotations, axes, titre, couleurs…)
 streamlit
 
 Problematique choisie :
-Visualiser l'accélération du réchauffement climatique en France métropolitaine de 1950 à 1974 :
+Visualiser l'accélération du réchauffement climatique en France métropolitaine de 1950 à 1984 :
 des moyennes annuelles aux réalités locales
