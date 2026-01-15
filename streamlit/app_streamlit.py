@@ -6,9 +6,8 @@ import os
 from pathlib import Path
 
 
-# ==========================================
+
 # 1. CONFIGURATION DE LA PAGE
-# ==========================================
 st.set_page_config(
     page_title="Dashboard Météo France (35 ans)",
     page_icon="🌦️",
@@ -18,9 +17,7 @@ st.set_page_config(
 st.title("🌦️ Analyse Climatique France (1950-1985)")
 st.markdown("Visualisation interactive des données météorologiques journalières.")
 
-# ==========================================
 # 2. FONCTION DE CHARGEMENT (Avec Cache)
-# ==========================================
 @st.cache_resource
 def load_data():
     """
@@ -56,15 +53,12 @@ def load_data():
     col_temp = 'Temperature_C' if 'Temperature_C' in df_france.columns else 't2m'
 
     # --- Préparation B : Données Carte (Ré-échantillonnage mensuel) ---
-    # On prépare déjà la version mensuelle pour l'animation (pour éviter les lenteurs)
     da_temp = ds[col_temp]
     ds_map_viz = da_temp.resample(time='1MS').mean(skipna=True)
 
     return df_france, ds_map_viz, col_temp
 
-# ==========================================
 # 3. CHARGEMENT
-# ==========================================
 with st.spinner('Chargement des données NetCDF en cours...'):
     df_france, ds_map_viz, col_temp = load_data()
 
@@ -72,9 +66,7 @@ if df_france is None:
     st.error("❌ Fichier 'donnees_carte_35ans_journalier.nc' introuvable. Veuillez le placer dans le dossier.")
     st.stop()
 
-# ==========================================
 # 4. INTERFACE (ONGLETS)
-# ==========================================
 tab1, tab2, tab3 = st.tabs(["📈 Anomalies", "🍂 Saisons", "🗺️ Carte Animée"])
 
 # --- ONGLET 1 : Anomalie Annuelle ---
