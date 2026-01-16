@@ -116,13 +116,13 @@ if df_france is not None:
 
     st.markdown("### Analyse : Le Basculement des Années 80")
     st.write("""
-**Le constat scientifique :** Nos graphiques révèlent une **rupture climatique** (ou point d'inflexion) située autour de 1980.
+        **Le constat scientifique :** Nos graphiques révèlent une **rupture climatique** (ou point d'inflexion) située autour de 1980.
 
-* **Avant 1980 :** Le climat fluctue naturellement. On alterne entre années froides (ex: 1956) et chaudes sans direction précise. Les émissions de particules (pollution industrielle) masquaient en partie le réchauffement (effet "Global Dimming").
-* **Après 1980 :** On observe un **changement de régime**. La variabilité naturelle est dominée par l'accumulation des gaz à effet de serre. Les années froides disparaissent et la température moyenne entame une ascension quasi-continue.
+        * **Avant 1980 :** Le climat fluctue naturellement. On alterne entre années froides (ex: 1956) et chaudes sans direction précise. Les émissions de particules (pollution industrielle) masquaient en partie le réchauffement (effet "Global Dimming").
+        * **Après 1980 :** On observe un **changement de régime**. La variabilité naturelle est dominée par l'accumulation des gaz à effet de serre. Les années froides disparaissent et la température moyenne entame une ascension quasi-continue.
 
-**Conclusion :** La période 1950-1984 capture exactement ce moment historique où le signal du réchauffement climatique émerge définitivement du "bruit" naturel pour devenir la tendance dominante.
-""")
+        **Conclusion :** La période 1950-1984 capture exactement ce moment historique où le signal du réchauffement climatique émerge définitivement du "bruit" naturel pour devenir la tendance dominante.
+        """)
 
     # ONGLET 1 : ANOMALIE ANNUELLE
     with tab1:
@@ -180,8 +180,6 @@ if df_france is not None:
         st.write("Ce diagramme en boîte montre la dispersion des températures pour chaque saison. L'animation permet de faire défiler les années une par une.")
 
         st.info("**Apport à la problématique :** Il permet d'affiner l'analyse annuelle. On cherche à voir si le changement climatique affecte toutes les saisons de la même manière ou si ce sont seulement les étés qui deviennent plus chauds et variables.")
-
-
         st.header("Matrice Thermique : Saisons vs Décennies")
 
 # 1. Préparation des données
@@ -197,7 +195,6 @@ if df_france is not None:
 })
 
 # Création de la colonne Décennie (1950, 1960, 1970...)
-# C'est l'étape clé pour reproduire votre image
         df_visu['Decennie'] = (df_visu['Year'] // 10) * 10
 
 # 2. Calcul de la MOYENNE
@@ -221,7 +218,7 @@ if df_france is not None:
         fig.update_layout(
             xaxis_title="Décennie",
             yaxis_title="Saison",
-            xaxis=dict(type='category'), # Affiche bien 1950, 1960 comme des étiquettes
+            xaxis=dict(type='category'),
             height=500
         )
 
