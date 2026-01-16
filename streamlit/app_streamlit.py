@@ -82,8 +82,6 @@ if df_france is not None:
     # -------------------------------------------------------
     with tab0:
         st.title("Tableau de Bord Climatique (1950-1984)")
-        st.markdown("Bienvenue sur l'outil d'analyse des mutations climatiques en France.")
-
         st.markdown("---")
 
         # 1. Calcul des Chiffres Clés (KPIs)
@@ -114,7 +112,7 @@ if df_france is not None:
 
         st.markdown("---")
 
-    st.markdown("### Analyse : Le Basculement des Années 80")
+    st.write("### Analyse : Le Basculement des Années 80")
     st.write("""
         **Le constat scientifique :** Nos graphiques révèlent une **rupture climatique** (ou point d'inflexion) située autour de 1980.
 
