@@ -80,41 +80,44 @@ if df_france is not None:
     # -------------------------------------------------------
     # ONGLET 0 : TABLEAU DE BORD (VUE GÉNÉRALE)
     # -------------------------------------------------------
+    # -------------------------------------------------------
+# ONGLET 0 : TABLEAU DE BORD (VUE GÉNÉRALE)
+# -------------------------------------------------------
     with tab0:
-        st.title("Tableau de Bord Climatique (1950-1984)")
-        st.markdown("---")
+     st.title("Tableau de Bord Climatique (1950-1984)")
+     st.markdown("---")
 
-    st.write("### Chiffres Clés : France Métropolitaine (1950-1984)")
-        # 1. Calcul des Chiffres Clés (KPIs)
-    moyenne_globale = df_france[col_temp].mean()
+     st.write("### Chiffres Clés : France Métropolitaine (1950-1984)")
 
-        # Record de chaud
-    rec_chaud = df_france.loc[df_france[col_temp].idxmax()]
-    temp_max = rec_chaud[col_temp]
-    date_max = rec_chaud['time'].strftime('%d %B %Y')
+    # 1. Calcul des Chiffres Clés (KPIs)
+     moyenne_globale = df_france[col_temp].mean()
 
-        # Record de froid
-    rec_froid = df_france.loc[df_france[col_temp].idxmin()]
-    temp_min = rec_froid[col_temp]
-    date_min = rec_froid['time'].strftime('%d %B %Y')
+    # Record de chaud
+     rec_chaud = df_france.loc[df_france[col_temp].idxmax()]
+     temp_max = rec_chaud[col_temp]
+     date_max = rec_chaud['time'].strftime('%d %B %Y')
 
+     # Record de froid
+     rec_froid = df_france.loc[df_france[col_temp].idxmin()]
+     temp_min = rec_froid[col_temp]
+     date_min = rec_froid['time'].strftime('%d %B %Y')
 
-        # 2. Affichage en 3 colonnes (Grosses Métriques)
-    col1, col2, col3 = st.columns(3)
+    # 2. Affichage en 3 colonnes (Grosses Métriques)
+     col1, col2, col3 = st.columns(3)
 
-    with col1:
-            st.metric(label="Moyenne sur 35 ans", value=f"{moyenne_globale:.1f} °C")
+     with col1:
+        st.metric(label="Moyenne sur 35 ans", value=f"{moyenne_globale:.1f} °C")
 
-    with col2:
-            st.metric(label="Record de Chaleur", value=f"{temp_max:.1f} °C", delta=date_max)
+     with col2:
+        st.metric(label="Record de Chaleur", value=f"{temp_max:.1f} °C", delta=date_max)
 
-    with col3:
-            st.metric(label="Record de Froid", value=f"{temp_min:.1f} °C", delta=date_min, delta_color="inverse")
+     with col3:
+        st.metric(label="Record de Froid", value=f"{temp_min:.1f} °C", delta=date_min, delta_color="inverse")
 
     st.markdown("---")
 
-    st.write("Analyse : Le Basculement des Années 80")
-    st.infos("""
+    st.write("### Analyse : Le Basculement des Années 80")
+    st.info("""
         *Le constat scientifique :* Nos graphiques révèlent une **rupture climatique** (ou point d'inflexion) située autour de 1980.
 
         * **Avant 1980 :** Le climat fluctue naturellement. On alterne entre années froides (ex: 1956) et chaudes sans direction précise. Les émissions de particules (pollution industrielle) masquaient en partie le réchauffement (effet "Global Dimming").
@@ -122,6 +125,7 @@ if df_france is not None:
 
         **Conclusion :** La période 1950-1984 capture exactement ce moment historique où le signal du réchauffement climatique émerge définitivement du "bruit" naturel pour devenir la tendance dominante.
         """)
+
 
     # ONGLET 1 : ANOMALIE ANNUELLE
     with tab1:
