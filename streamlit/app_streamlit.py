@@ -84,15 +84,6 @@ if df_france is not None:
         st.title("Tableau de Bord Climatique (1950-1984)")
         st.markdown("---")
 
-    st.write("### Analyse : Le Basculement des Années 80")
-    st.write("""
-        **Le constat scientifique :** Nos graphiques révèlent une **rupture climatique** (ou point d'inflexion) située autour de 1980.
-
-        * **Avant 1980 :** Le climat fluctue naturellement. On alterne entre années froides (ex: 1956) et chaudes sans direction précise. Les émissions de particules (pollution industrielle) masquaient en partie le réchauffement (effet "Global Dimming").
-        * **Après 1980 :** On observe un **changement de régime**. La variabilité naturelle est dominée par l'accumulation des gaz à effet de serre. Les années froides disparaissent et la température moyenne entame une ascension quasi-continue.
-
-        **Conclusion :** La période 1950-1984 capture exactement ce moment historique où le signal du réchauffement climatique émerge définitivement du "bruit" naturel pour devenir la tendance dominante.
-        """)
     st.write("### Chiffres Clés : France Métropolitaine (1950-1984)")
         # 1. Calcul des Chiffres Clés (KPIs)
     moyenne_globale = df_france[col_temp].mean()
@@ -122,6 +113,15 @@ if df_france is not None:
 
     st.markdown("---")
 
+    st.write("Analyse : Le Basculement des Années 80")
+    st.infos("""
+        *Le constat scientifique :* Nos graphiques révèlent une **rupture climatique** (ou point d'inflexion) située autour de 1980.
+
+        * **Avant 1980 :** Le climat fluctue naturellement. On alterne entre années froides (ex: 1956) et chaudes sans direction précise. Les émissions de particules (pollution industrielle) masquaient en partie le réchauffement (effet "Global Dimming").
+        * **Après 1980 :** On observe un **changement de régime**. La variabilité naturelle est dominée par l'accumulation des gaz à effet de serre. Les années froides disparaissent et la température moyenne entame une ascension quasi-continue.
+
+        **Conclusion :** La période 1950-1984 capture exactement ce moment historique où le signal du réchauffement climatique émerge définitivement du "bruit" naturel pour devenir la tendance dominante.
+        """)
 
     # ONGLET 1 : ANOMALIE ANNUELLE
     with tab1:
