@@ -226,18 +226,18 @@ if df_france is not None:
 # 4. Description et Analyse (Demandé)
         st.markdown("### Description")
         st.write("""
-Ici, j'ai croisé les saisons et les décennies. Le truc le plus flagrant, c'est la ligne "Été". Au début (années 50), la case est orange clair/rouge pâle.
+                 Ici, j'ai croisé les saisons et les décennies. Le truc le plus flagrant, c'est la ligne "Été". Au début (années 50), la case est orange clair/rouge pâle.
                  Mais plus on va vers la droite (années 80), plus la case devient rouge foncé.
                   Les autres saisons (Hiver, Automne) ne changent pas autant, elles restent assez stables
-L'échelle de couleur permet d'identifier immédiatement les anomalies : le **bleu** pour le froid et le **rouge** pour le chaud.
-""")
+                  L'échelle de couleur permet d'identifier immédiatement les anomalies : le **bleu** pour le froid et le **rouge** pour le chaud.
+                 """)
 
         st.info("""
-**Apport à la problématique :**
-Ça prouve que le réchauffement ne touche pas toute l'année de la même façon. Pour l'instant,
+          **Apport à la problématique :**
+             Ça prouve que le réchauffement ne touche pas toute l'année de la même façon. Pour l'instant,
                 ce sont surtout nos étés qui deviennent plus intenses et plus chauds.
                 C'est le premier signe visible du changement climatique en France.**.
-""")
+                  """)
 
     # ONGLET 3 : TEMPÉRATURES RÉELLES (SCATTER)
     with tab3:
