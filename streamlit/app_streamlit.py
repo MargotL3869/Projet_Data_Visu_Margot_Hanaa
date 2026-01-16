@@ -5,9 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 
-# ==========================================
 # 1. CONFIGURATION ET TITRE
-# ==========================================
 st.set_page_config(layout="wide", page_title="Climat 1950-1984")
 
 st.title("Visualiser l'accélération du réchauffement climatique en France métropolitaine de 1950 à 1984")
@@ -18,9 +16,7 @@ Cette application a pour but d'analyser l'évolution du climat sur 35 ans.
 Nous allons partir d'une vision globale (les moyennes) pour descendre vers le détail (les saisons, les jours précis, et la carte).
 """)
 
-# ==========================================
 # 2. CHARGEMENT DES DONNÉES
-# ==========================================
 @st.cache_resource
 def load_data():
     # Gestion du chemin de fichier
@@ -63,9 +59,8 @@ def load_data():
 
 df_france, ds_raw, col_temp = load_data()
 
-# ==========================================
+
 # 3. LES ONGLETS DE VISUALISATION
-# ==========================================
 
 if df_france is not None:
 
@@ -128,9 +123,7 @@ if df_france is not None:
 **Conclusion :** La période 1950-1984 capture exactement ce moment historique où le signal du réchauffement climatique émerge définitivement du "bruit" naturel pour devenir la tendance dominante.
 """)
 
-    # -------------------------------------------------------
     # ONGLET 1 : ANOMALIE ANNUELLE
-    # -------------------------------------------------------
     with tab1:
         st.header("Anomalie de température annuelle")
 
@@ -159,9 +152,8 @@ if df_france is not None:
 
         st.info("**Apport à la problématique :** Entre 1950 et 1985, les anomalies de température annuelle en France présentent une forte variabilité interannuelle, sans tendance linéaire marquée. Plusieurs épisodes contrastés alternent entre anomalies positives et négatives, traduisant une dominance de la variabilité naturelle du climat sur cette période.")
 
-    # -------------------------------------------------------
+
     # ONGLET 2 : SAISONS (BOXPLOT)
-    # -------------------------------------------------------
     with tab2:
         st.header("Distribution des températures par Saison")
 
@@ -251,9 +243,7 @@ L'échelle de couleur permet d'identifier immédiatement les anomalies : le **bl
                 C'est le premier signe visible du changement climatique en France.**.
 """)
 
-    # -------------------------------------------------------
     # ONGLET 3 : TEMPÉRATURES RÉELLES (SCATTER)
-    # -------------------------------------------------------
     with tab3:
         st.header("Températures réelles jour par jour")
 
@@ -287,9 +277,7 @@ L'échelle de couleur permet d'identifier immédiatement les anomalies : le **bl
 
         st.info("**Apport à la problématique :** On quitte les moyennes lissées pour voir la réalité quotidienne. Cela permet de repérer les vagues de froid (points bleus sous la ligne de gel) et les vagues de chaleur invisibles sur une simple moyenne annuelle.")
 
-    # -------------------------------------------------------
     # ONGLET 4 : FOCUS 1976
-    # -------------------------------------------------------
     with tab4:
         st.header("Comparaison : L'année 1976 vs la Normale")
 
@@ -328,10 +316,8 @@ L'échelle de couleur permet d'identifier immédiatement les anomalies : le **bl
         "Le réchauffement climatique, ce n'est pas juste 'il fait un peu plus doux', " \
         "c'est l'apparition d'années 'catastrophes' comme 1976 (sécheresse) qui sortent complètement de la norme.")
 
-   # -------------------------------------------------------
-    # ONGLET 5 : Décennies (BOXPLOT)
-    # -------------------------------------------------------
 
+    # ONGLET 5 : Décennies (BOXPLOT)
     with tab5:
         st.header("Évolution par Décennie")
 
@@ -372,12 +358,8 @@ L'échelle de couleur permet d'identifier immédiatement les anomalies : le **bl
 
         st.info("**Apport à la problématique :** Cela permet de valider l'accélération du phénomène. On cherche à vérifier si la 'normale' des années 80 est visiblement plus élevée que celle des années 50, en isolant les variations saisonnières.")
 
-# -------------------------------------------------------
-    # ONGLET 6 : COMPARATEUR DE PÉRIODES (AVANT/APRÈS)
-    # -------------------------------------------------------
-    # -------------------------------------------------------
+
     # ONGLET 6 : COMPARATEUR GÉNÉRAL (VIOLIN + STATS)
-    # -------------------------------------------------------
     with tab6:
         st.header("6. Comparateur Universel")
         st.write("Cet outil analyse la 'signature thermique' de la période choisie et la compare mathématiquement au reste de l'histoire.")
@@ -453,9 +435,7 @@ L'échelle de couleur permet d'identifier immédiatement les anomalies : le **bl
         * La largeur du violon indique la fréquence : une forme plus "ventrue" vers le haut signifie des jours chauds plus fréquents.
         """)
 
-    # -------------------------------------------------------
     # ONGLET 7 : CARTE ANIMÉE
-    # -------------------------------------------------------
     with tab7:
         st.header("Animation thermique de la France")
 
