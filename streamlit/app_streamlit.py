@@ -70,13 +70,14 @@ df_france, ds_raw, col_temp = load_data()
 if df_france is not None:
 
     # Création des onglets
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
         "1. Moyennes Annuelles",
         "2. Cycles Saisonniers",
         "3. Températures Réelles",
         "4. Focus 1976",
         "5. Décennies",
-        "6. Carte de France"
+        "6. Comparateur Périodes",
+        "7. Carte de France"
     ])
 
     # -------------------------------------------------------
@@ -256,12 +257,78 @@ if df_france is not None:
 
         st.info("**Apport à la problématique :** Cela permet de valider l'accélération du phénomène. On cherche à vérifier si la 'normale' des années 80 est visiblement plus élevée que celle des années 50, en isolant les variations saisonnières.")
 
-
-
-    # -------------------------------------------------------
-    # ONGLET 6 : CARTE ANIMÉE
+# -------------------------------------------------------
+    # ONGLET 6 : COMPARATEUR DE PÉRIODES (AVANT/APRÈS)
     # -------------------------------------------------------
     with tab6:
+        st.header("6. Comparateur Temporel Interactif")
+        st.write("""
+        Cet outil permet de vérifier statistiquement le réchauffement.
+        En sélectionnant une période (par exemple les années 50), on peut comparer la distribution de ses températures avec le reste de l'historique.
+        Si la courbe rouge (période choisie) est décalée vers la gauche par rapport à la grise, c'est qu'il faisait plus froid à cette époque.
+        """)
+
+        st.markdown("---")
+
+        # 1. Widget Double Slider (Pour choisir début et fin)
+        annee_min = int(df_france['Year'].min())
+        annee_max = int(df_france['Year'].max())
+
+        col_slider, col_info = st.columns([2, 1])
+
+        with col_slider:
+            # Slider à deux têtes
+            periode = st.slider(
+                "Sélectionnez la période à isoler (Zone Rouge) :",
+                min_value=annee_min,
+                max_value=annee_max,
+                value=(1950, 1960) # Valeur par défaut : les années 50
+            )
+
+        with col_info:
+            st.info(f"Période comparée : **{periode[0]} à {periode[1]}**")
+
+        # 2. Création dynamique des groupes
+        # On crée une copie pour ne pas casser le dataframe principal
+        df_compar = df_france.copy()
+
+        # On étiquette chaque jour : est-il dans la période choisie ou pas ?
+        label_periode = f"Période {periode[0]}-{periode[1]}"
+        df_compar['Groupe'] = df_compar['Year'].apply(
+            lambda x: label_periode if periode[0] <= x <= periode[1] else "Reste de l'historique"
+        )
+
+        # 3. Graphique Histogramme Comparatif
+        fig_comp = px.histogram(
+            df_compar,
+            x=col_temp,
+            color="Groupe",
+            barmode="overlay",
+            histnorm='percent',
+            nbins=40,
+            color_discrete_map={"Reste de l'historique": "black", label_periode: "#E74C3C"},
+            title=f"Distribution des températures : {label_periode} vs Le Reste",
+            opacity=0.6
+        )
+
+        fig_comp.update_layout(
+            xaxis_title="Température (°C)",
+            yaxis_title="Fréquence (%)",
+            legend=dict(title=None, y=0.9, x=0.8)
+        )
+
+        st.plotly_chart(fig_comp, use_container_width=True)
+
+        st.success("""
+        **Comment lire ce graphique ?**
+        * Si la zone **Rouge** est décalée vers la **gauche** (vers le froid) par rapport au gris : La période choisie était plus froide que la moyenne.
+        * Si la zone **Rouge** est décalée vers la **droite** (vers le chaud) : La période choisie était plus chaude.
+        """)
+
+    # -------------------------------------------------------
+    # ONGLET 7 : CARTE ANIMÉE
+    # -------------------------------------------------------
+    with tab7:
         st.header("Animation thermique de la France")
 
         # Préparation (Moyenne mensuelle pour l'animation)
