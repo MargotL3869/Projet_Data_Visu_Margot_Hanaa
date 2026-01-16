@@ -1,0 +1,54 @@
+import plotly.express as px
+Histogramme / distribution des températures
+
+import plotly.express as px
+
+fig = px.histogram(
+    df_france,
+    x=col_temp,
+    nbins=40,
+    title="Distribution des températures journalières en France (1950–1985)",
+    labels={col_temp: "Température (°C)"}
+)
+
+fig.update_layout(
+    xaxis_title="Température (°C)",
+    yaxis_title="Fréquence",
+    font=dict(size=14),
+    bargap=0.05
+)
+
+fig.show()
+
+
+Heatmap saison × année
+
+
+df_heat = df_france.copy()
+df_heat["Season"] = df_heat["Month"].map({
+    12: "Hiver", 1: "Hiver", 2: "Hiver",
+    3: "Printemps", 4: "Printemps", 5: "Printemps",
+    6: "Été", 7: "Été", 8: "Été",
+    9: "Automne", 10: "Automne", 11: "Automne"
+})
+
+df_heat = df_heat.groupby(["Year", "Season"])[col_temp].mean().reset_index()
+
+fig = px.density_heatmap(
+    df_heat,
+    x="Year",
+    y="Season",
+    z=col_temp,
+    color_continuous_scale="thermal",
+    title="Évolution saisonnière des températures moyennes en France"
+)
+
+fig.update_layout(
+    xaxis_title="Année",
+    yaxis_title="Saison",
+    font=dict(size=14)
+)
+
+fig.show()
+
+
