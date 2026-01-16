@@ -1,4 +1,5 @@
 import streamlit as st
+
 import xarray as xr
 import pandas as pd
 import plotly.express as px
@@ -6,7 +7,7 @@ import plotly.graph_objects as go
 from pathlib import Path
 
 # 1. CONFIGURATION ET TITRE
-st.set_page_config(layout="wide", page_title="Climat 1950-1984")
+st.set_page_config(layout="wide", page_title="Climat 1950-1984-Laignel Margot et Hajmi Hanaa")
 
 st.title("Visualiser l'accélération du réchauffement climatique en France métropolitaine de 1950 à 1984")
 st.subheader("Problématique : Comment le réchauffement climatique se manifeste-t-il en France métropolitaine entre 1950 et 1984, depuis les tendances moyennes globales jusqu’aux variations saisonnières")
