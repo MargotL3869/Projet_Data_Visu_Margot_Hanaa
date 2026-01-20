@@ -371,6 +371,7 @@ if df_france is not None:
         df_comp = df_france.copy()
 
         # On étiquette les données : "Cible" vs "Reste"
+        # Astuce : On utilise une fonction simple pour créer la colonne 'Groupe'
         df_comp['Groupe'] = df_comp['Year'].apply(
             lambda x: nom_periode if periode[0] <= x <= periode[1] else nom_reste
         )
