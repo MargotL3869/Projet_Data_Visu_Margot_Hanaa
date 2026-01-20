@@ -77,12 +77,8 @@ if df_france is not None:
         "7. Carte de France"
     ])
 
-    # -------------------------------------------------------
-    # ONGLET 0 : TABLEAU DE BORD (VUE GÉNÉRALE)
-    # -------------------------------------------------------
-    # -------------------------------------------------------
 # ONGLET 0 : TABLEAU DE BORD (VUE GÉNÉRALE)
-# -------------------------------------------------------
+
     with tab0:
      st.title("Tableau de Bord Climatique (1950-1984)")
      st.markdown("---")
@@ -176,7 +172,6 @@ if df_france is not None:
         st.header("Matrice Thermique : Saisons vs Décennies")
 
 # 1. Préparation des données
-# On travaille sur une copie pour ne pas casser le dataset principal
         df_visu = df_france.copy()
 
 # Création de la colonne Saison
@@ -191,7 +186,6 @@ if df_france is not None:
         df_visu['Decennie'] = (df_visu['Year'] // 10) * 10
 
 # 2. Calcul de la MOYENNE
-# On groupe par Décennie et Saison pour avoir la matrice 4x4
         df_moyenne = df_visu.groupby(['Decennie', 'Saison'])[col_temp].mean().reset_index()
 
 # 3. Création du graphique
@@ -397,14 +391,13 @@ if df_france is not None:
             )
 
         # 4. Le Graphique "Violin" (Vision Générale)
-        # C'est le meilleur choix pour comparer des distributions de tailles différentes
         fig_violin = px.violin(
             df_comp,
             y=col_temp,       # Température en vertical
             x="Groupe",       # Les deux groupes côte à côte
             color="Groupe",   # Couleur distincte
             box=True,         # Affiche la médiane (la barre au milieu du violon)
-            points=False,     # On cache les points pour garder une vision "générale" propre
+            points=False,
             title=f"Signature Thermique : {nom_periode} vs Reste",
             color_discrete_map={nom_reste: "lightgrey", nom_periode: "#E74C3C"}
         )
