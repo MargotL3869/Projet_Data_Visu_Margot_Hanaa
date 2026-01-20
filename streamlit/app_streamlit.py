@@ -20,16 +20,33 @@ Nous allons partir d'une vision globale (les moyennes) pour descendre vers le d�
 # 2. CHARGEMENT DES DONNÉES
 @st.cache_resource
 def load_data():
-    # Gestion du chemin de fichier
-    file_path = Path("..") / "TP" / "meteo_france_70ans_final.nc"
+    # Nom du fichier final que nous avons généré et poussé sur GitHub
+    filename = "meteo_france_70ans_final.nc"
+
+    # --- GESTION ROBUSTE DU CHEMIN ---
+    # On repère où se trouve ce script (app_streamlit.py) sur le disque
+    script_dir = Path(__file__).parent
+
+    # On construit le chemin vers le dossier TP par rapport au script
+    # (On remonte d'un cran, puis on va dans TP)
+    file_path = script_dir.parent / "TP" / filename
+
+    # Vérification et affichage d'erreur explicite si absent
     if not file_path.exists():
-        file_path = Path("meteo_france_70ans_final.nc")
+        st.error(f"❌ Fichier introuvable ! Le script cherche ici : {file_path}")
+        st.info("Vérifie que le fichier 'donnees_carte_70ans_journalier.nc' est bien dans le dossier 'TP'.")
+        return None, None, None
 
     try:
         ds = xr.open_dataset(file_path)
 
         # Moyenne spatiale pour les graphiques 2D
-        ds_mean = ds.mean(dim=['latitude', 'longitude'], skipna=True)
+        # On gère 'latitude'/'longitude' OU 'lat'/'lon' pour être sûr
+        dims = list(ds.coords)
+        lat_name = 'latitude' if 'latitude' in dims else 'lat'
+        lon_name = 'longitude' if 'longitude' in dims else 'lon'
+
+        ds_mean = ds.mean(dim=[lat_name, lon_name], skipna=True)
         df = ds_mean.to_dataframe().reset_index()
 
         # Nettoyage et renommage
@@ -56,10 +73,10 @@ def load_data():
         return df, ds, col_temp
 
     except Exception as e:
+        st.error(f"Une erreur est survenue lors de la lecture du fichier : {e}")
         return None, None, None
 
 df_france, ds_raw, col_temp = load_data()
-
 
 # 3. LES ONGLETS DE VISUALISATION
 
