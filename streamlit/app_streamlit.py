@@ -7,13 +7,13 @@ import plotly.graph_objects as go
 from pathlib import Path
 
 # 1. CONFIGURATION ET TITRE
-st.set_page_config(layout="wide", page_title="Climat 1950-1984-Laignel Margot et Hajmi Hanaa")
+st.set_page_config(layout="wide", page_title="Climat 1950-2020-Laignel Margot et Hajmi Hanaa")
 
-st.title("Visualiser l'accélération du réchauffement climatique en France métropolitaine de 1950 à 1984")
-st.subheader("Problématique : Comment le réchauffement climatique se manifeste-t-il en France métropolitaine entre 1950 et 1984, depuis les tendances moyennes globales jusqu’aux variations saisonnières")
+st.title("Visualiser l'accélération du réchauffement climatique en France métropolitaine de 1950 à 2020")
+st.subheader("Problématique : Comment le réchauffement climatique se manifeste-t-il en France métropolitaine entre 1950 et 2020, depuis les tendances moyennes globales jusqu’aux variations saisonnières")
 
 st.markdown("""
-Cette application a pour but d'analyser l'évolution du climat sur 35 ans.
+Cette application a pour but d'analyser l'évolution du climat sur 70 ans.
 Nous allons partir d'une vision globale (les moyennes) pour descendre vers le détail (les saisons, les jours précis, et la carte).
 """)
 
@@ -21,9 +21,9 @@ Nous allons partir d'une vision globale (les moyennes) pour descendre vers le d�
 @st.cache_resource
 def load_data():
     # Gestion du chemin de fichier
-    file_path = Path("..") / "donnees_carte_35ans_journalier.nc"
+    file_path = Path("..") / "TP" / "meteo_france_70ans_final.nc"
     if not file_path.exists():
-        file_path = Path("donnees_carte_35ans_journalier.nc")
+        file_path = Path("meteo_france_70ans_final.nc")
 
     try:
         ds = xr.open_dataset(file_path)
@@ -80,10 +80,10 @@ if df_france is not None:
 # ONGLET 0 : TABLEAU DE BORD (VUE GÉNÉRALE)
 
     with tab0:
-     st.title("Tableau de Bord Climatique (1950-1984)")
+     st.title("Tableau de Bord Climatique (1950-2020)")
      st.markdown("---")
 
-     st.write("### Chiffres Clés : France Métropolitaine (1950-1984)")
+     st.write("### Chiffres Clés : France Métropolitaine (1950-2020)")
 
     # 1. Calcul des Chiffres Clés (KPIs)
      moyenne_globale = df_france[col_temp].mean()
@@ -138,9 +138,9 @@ if df_france is not None:
         st.plotly_chart(fig1, use_container_width=True)
 
         st.markdown("**Description :**")
-        st.write("Ce graphique montre l'écart de température de chaque année par rapport à la moyenne globale de la période 1950-1985. La ligne pointillée grise représente la moyenne.")
+        st.write("Ce graphique montre l'écart de température de chaque année par rapport à la moyenne globale de la période 1950-2020. La ligne pointillée grise représente la moyenne.")
 
-        st.info("**Apport à la problématique :** Entre 1950 et 1985, les anomalies de température annuelle en France présentent une forte variabilité interannuelle, sans tendance linéaire marquée. Plusieurs épisodes contrastés alternent entre anomalies positives et négatives, traduisant une dominance de la variabilité naturelle du climat sur cette période.")
+        st.info("**Apport à la problématique :** Entre 1950 et 2020, les anomalies de température annuelle en France présentent une forte variabilité interannuelle, sans tendance linéaire marquée. Plusieurs épisodes contrastés alternent entre anomalies positives et négatives, traduisant une dominance de la variabilité naturelle du climat sur cette période.")
 
 
     # ONGLET 2 : SAISONS (BOXPLOT)
@@ -274,7 +274,7 @@ if df_france is not None:
         # Moyenne
         fig4.add_trace(go.Scatter(
             x=df_climat['DayOfYear'], y=df_climat[col_temp],
-            mode='lines', name='Moyenne 1950-1985',
+            mode='lines', name='Moyenne 1950-2020',
             line=dict(color='grey', width=1),
             fill='tozeroy', fillcolor='rgba(200,200,200,0.2)'
         ))
