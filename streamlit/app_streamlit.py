@@ -371,7 +371,6 @@ if df_france is not None:
         df_comp = df_france.copy()
 
         # On étiquette les données : "Cible" vs "Reste"
-        # Astuce : On utilise une fonction simple pour créer la colonne 'Groupe'
         df_comp['Groupe'] = df_comp['Year'].apply(
             lambda x: nom_periode if periode[0] <= x <= periode[1] else nom_reste
         )
@@ -387,7 +386,7 @@ if df_france is not None:
                 label=f"Moyenne {nom_periode}",
                 value=f"{moy_periode:.2f} °C",
                 delta=f"{delta:+.2f} °C vs Reste",
-                delta_color="normal" # Vert si plus chaud, Rouge si plus froid (ou inverse selon logique)
+                delta_color="normal"
             )
 
         # 4. Le Graphique "Violin" (Vision Générale)
