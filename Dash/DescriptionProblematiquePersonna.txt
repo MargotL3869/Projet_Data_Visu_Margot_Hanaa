@@ -2,4 +2,87 @@ Problématique :
 Comment permettre aux décideurs locaux (collectivités) de visualiser simplement l’évolution climatique sur leur propre territoire
 depuis 70 ans (1950–2020), afin de justifier des politiques d’adaptation concrètes ?
 
+Sous-question : Comment passer du ressenti ("il n'y a plus de saisons") à la mesure factuelle
+("l'été a gagné 18 jours en 40 ans") ?
+
+
 Personna :
+Prénom : Marc
+
+Métier : Chargé de mission "Plan Climat" (PCAET) dans une Communauté de Communes (ou Directeur des Services Techniques).
+
+Son profil : Il est ingénieur ou technicien. Il comprend les chiffres, mais il doit convaincre des élus (le Maire, les adjoints) qui ne sont pas scientifiques et qui gèrent un budget serré.
+
+Ses frustrations :
+
+Il en a marre qu'on lui réponde "Oh, en 1976 aussi il a fait chaud !" (Le biais de mémoire).
+
+Il a du mal à justifier des dépenses d'adaptation (végétalisation, isolation)
+car les bénéfices sont lointains.
+
+Les données de Météo-France sont souvent payantes ou compliquées à obtenir pour sa petite commune.
+
+
+Les Besoins Utilisateurs
+Pour que l'application serve à Marc, elle doit répondre à 3 besoins :
+
+L'Ancrage Local (Proximité) : Marc se fiche de la température moyenne en France.
+Il veut voir la courbe de SA commune (Le Rheu, Bordeaux, etc.) pour que le Maire se sente concerné.
+
+La Preuve par l'Historique (Crédibilité) : Il a besoin de 70 ans de recul pour
+montrer que ce n'est pas "juste une année chaude", mais une tendance lourde.
+
+L'Opérationnel (Concret) : Il a besoin d'indicateurs qui parlent au quotidien des
+services techniques (jours de gel pour les routes, jours de canicule pour les écoles et EHPAD).
+
+
+Graphique 1 : Les "Warming Stripes" Locales (Le Choc Visuel)
+Quoi : Un code-barres temporel (1 barre = 1 année). Bleu si l'année est froide, Rouge si elle est chaude (par rapport à la moyenne 1950-1980).
+
+Message pour Marc : "Monsieur le Maire, regardez le mur rouge qui apparaît depuis les années 90. Notre ville a changé de couleur."
+
+Intérêt : Impact visuel immédiat, compréhensible en 1 seconde sans lire l'axe des ordonnées.
+
+
+Graphique 2 : Le Croisement des Risques (Gel vs Canicule)
+Quoi : Deux courbes sur le même graphique.
+
+Courbe Bleue : Nombre de jours de gel par an (< 0°C).
+
+Courbe Rouge : Nombre de jours de chaleur par an (> 25°C ou 30°C).
+
+Message pour Marc : "Avant, on budgetait du sel pour les routes (Gel). Aujourd'hui, on doit budgeter de la clim et des arbres (Canicule).
+Les courbes se sont croisées dans les années 2000."
+
+Intérêt : Très concret pour la gestion budgétaire et technique.
+
+
+Graphique 3 : La Matrice Calendaire (L'Allongement de l'Été)
+Quoi : Une Heatmap (Carte de chaleur). Axe X = Années, Axe Y = Mois.
+La couleur montre la température.
+
+Message pour Marc : "Regardez le mois de Juin et le mois de Septembre.
+Ils étaient jaunes/verts dans les années 60. Ils deviennent oranges/rouges.
+L'été ne dure plus 2 mois, mais 4."
+
+Intérêt : Montre le désaisonnement (impact sur l'agriculture, le tourisme, le rythme scolaire).
+
+
+Graphique 4 : Le Décalage de la Normale (Distribution / Histogramme)
+Quoi : Deux courbes en cloche superposées. La distribution des températures de la
+période 1950-1980 (Bleu) vs 1990-2020 (Rouge).
+
+Message pour Marc : "Ce n'est pas juste qu'il fait plus chaud. C'est que
+l'exceptionnel d'hier (l'extrême droite de la courbe bleue) est devenu la norme
+d'aujourd'hui (le sommet de la courbe rouge)."
+
+Intérêt : Argument scientifique imparable contre les climatosceptiques qui
+parlent de "cycles naturels".
+
+
+Graphique 5 : La Tendance de Fond (Moyenne Mobile)
+Quoi : Une courbe grise (données brutes journalières très bruitées) avec une grosse ligne rouge par-dessus (Moyenne mobile sur 10 ou 20 ans).
+
+Message pour Marc : "Oubliez la météo du jour qui varie tout le temps (gris). Regardez la ligne rouge : la tendance de fond est inexorablement à la hausse."
+
+Intérêt : Apprend à distinguer "Météo" (le bruit) et "Climat" (le signal).
