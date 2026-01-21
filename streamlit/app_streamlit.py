@@ -33,7 +33,7 @@ def load_data():
 
     # Vérification et affichage d'erreur explicite si absent
     if not file_path.exists():
-        st.error(f"❌ Fichier introuvable ! Le script cherche ici : {file_path}")
+        st.error(f"Fichier introuvable ! Le script cherche ici : {file_path}")
         st.info("Vérifie que le fichier 'donnees_carte_70ans_journalier.nc' est bien dans le dossier 'TP'.")
         return None, None, None
 
