@@ -1,0 +1,16 @@
+On pourrais faire un graphiques de comparaison d'une ville par rapport a la région,
+voir si y'a un decalage entre la ville du maire et le reste de la région
+Graphique Multi-Lignes Comparatif
+
+graphique de courbe d'anomalie de la ville du maire : Nuage de Points Temporel
+
+Une carte de chaleur de la ville
+
+Le "Simulateur de Seuils Critiques" (Slider Interactif) 🎚️
+Au lieu de figer la définition d'une canicule, tu laisses le maire choisir sa propre limite.
+Le Concept : Un histogramme montrant le nombre de jours par an dépassant une certaine température.
+On peut comparer des périodes : Histogramme de Fréquence Interactif
+
+Cliquez sur une année dans le graphique du haut pour afficher le détail journalier ci-dessous
+Graphique Master-Detail
+
