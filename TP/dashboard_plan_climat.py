@@ -10,7 +10,7 @@ import numpy as np
 # --- 1. Chargement et Préparation des Données ---
 try:
     # On charge le fichier
-    ds = xr.open_dataset("donnees_carte_35ans_journalier.nc")
+    ds = xr.open_dataset("donnees_carte_70ans_journalier.nc")
     
     # Normalisation des noms de variables (lat, lon, time)
     rename_dict = {}
