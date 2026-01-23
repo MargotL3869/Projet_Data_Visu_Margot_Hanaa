@@ -37,10 +37,18 @@ ds_poids = xr.open_dataset(file_poids)
 ds_meteo = xr.open_dataset(file_meteo)
 
 for ds in [ds_poids, ds_meteo]:
-    rename = {}
-    if 'latitude' in ds.coords: rename['latitude'] = 'lat'
-    if 'longitude' in ds.coords: rename['longitude'] = 'lon'
-    if rename: ds.rename(rename, inplace=True)
+ rename_poids = {}
+if 'latitude' in ds_poids.coords: rename_poids['latitude'] = 'lat'
+if 'longitude' in ds_poids.coords: rename_poids['longitude'] = 'lon'
+if rename_poids:
+    ds_poids = ds_poids.rename(rename_poids)
+
+# Pour ds_meteo
+rename_meteo = {}
+if 'latitude' in ds_meteo.coords: rename_meteo['latitude'] = 'lat'
+if 'longitude' in ds_meteo.coords: rename_meteo['longitude'] = 'lon'
+if rename_meteo:
+    ds_meteo = ds_meteo.rename(rename_meteo)
 
 var_temp = 'Temperature_C' if 'Temperature_C' in ds_meteo else 't2m'
 
@@ -108,3 +116,7 @@ app.layout = dbc.Container([
     ])
 
 ], fluid=True, className="p-4 bg-light")
+
+if __name__ == '__main__':
+    # debug=True permet de voir les erreurs dans le navigateur et recharger auto
+    app.run(debug=True)
