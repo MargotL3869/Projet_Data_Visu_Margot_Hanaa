@@ -14,3 +14,8 @@ On peut comparer des périodes : Histogramme de Fréquence Interactif
 Cliquez sur une année dans le graphique du haut pour afficher le détail journalier ci-dessous
 Graphique Master-Detail
 
+KPI utiles :
+- moyenne historique des températures
+- record absolu
+- nbr de degré pris en faisant 2020 - 1950
+-

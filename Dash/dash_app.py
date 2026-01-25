@@ -51,28 +51,31 @@ else:
 # Listes
 liste_regions = sorted(df_villes["Region_Assignee"].dropna().unique().astype(str))
 liste_annees = sorted(list(set(pd.to_datetime(ds.time.values).year)))
+premiere_annee = liste_annees[0]
 
 # =========================================================
-# 2. LAYOUT
+# 2. LAYOUT (INTERFACE COMPLETE)
 # =========================================================
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUMEN])
 
 app.layout = dbc.Container([
+
+    # --- EN-TÊTE ---
     dbc.Row([
-        dbc.Col(html.H1("Observatoire Climatique Régional & Local", className="text-primary mt-4"), width=12),
-        dbc.Col(dbc.Alert("Analyse des décrochages locaux vs moyennes régionales.", color="light"), width=12)
+        dbc.Col(html.H1("Observatoire du Climat Local (1950-2020)", className="text-primary mt-4"), width=12),
+        dbc.Col(dbc.Alert("Comparaison : Température locale vs Moyenne régionale.", color="info"), width=12)
     ]),
 
     dbc.Row([
-        # Sidebar
+        # --- COLONNE DE GAUCHE : PARAMÈTRES ---
         dbc.Col([
             dbc.Card([
-                dbc.CardHeader("Paramètres", className="bg-primary text-white"),
+                dbc.CardHeader("🎛️ Paramètres", className="bg-primary text-white"),
                 dbc.CardBody([
                     html.Label("1. Région :", className="fw-bold"),
                     dcc.Dropdown(id='dd-region', options=[{'label': r, 'value': r} for r in liste_regions], value=liste_regions[0], clearable=False, className="mb-3"),
 
-                    html.Label("2. Ville (Filtre Auto) :", className="fw-bold"),
+                    html.Label("2. Ville :", className="fw-bold"),
                     dcc.Dropdown(id='dd-ville', options=[], value=None, placeholder="Chargement...", clearable=False, searchable=True, className="mb-3"),
 
                     html.Hr(),
@@ -80,28 +83,92 @@ app.layout = dbc.Container([
                     dcc.Slider(id='slider-seuil', min=25, max=40, step=1, value=30, marks={i: str(i) for i in range(25, 41, 5)}),
 
                     html.Hr(),
-                    html.Label("4. Année :", className="fw-bold"),
+                    html.Label("4. Année Zoom :", className="fw-bold"),
                     dcc.Dropdown(id='dd-annee', options=[{'label': str(a), 'value': a} for a in liste_annees], value=2003, clearable=False, className="mb-3"),
                 ])
             ], className="shadow sticky-top", style={"top": "20px"})
         ], width=12, lg=3),
 
-        # Graphs
+        # --- COLONNE DE DROITE : VISUALISATIONS ---
         dbc.Col([
-            dbc.Row([
-                dbc.Col(dbc.Card([dbc.CardBody([html.H6("Moyenne Historique", className="text-muted"), html.H2(id="kpi-mean", className="text-primary")])], className="mb-3 text-center shadow-sm"), width=6),
-                dbc.Col(dbc.Card([dbc.CardBody([html.H6("Record Absolu", className="text-muted"), html.H2(id="kpi-max", className="text-danger")])], className="mb-3 text-center shadow-sm"), width=6),
-            ]),
 
-            dbc.Card([dbc.CardHeader("📈 Évolution : Ville vs Région"), dbc.CardBody(dcc.Graph(id='g-compare'))], className="mb-4 shadow-sm border-0"),
-            dbc.Card([dbc.CardHeader("🔎 Zoom Journalier"), dbc.CardBody(dcc.Graph(id='g-detail'))], className="mb-4 shadow-sm border-0"),
-            dbc.Card([dbc.CardHeader("📊 Anomalies (Warming Stripes)"), dbc.CardBody(dcc.Graph(id='g-master'))], className="mb-4 shadow-sm border-0"),
-
+            # 1. LIGNE DES 3 KPIS
             dbc.Row([
-                dbc.Col(dbc.Card([dbc.CardHeader("Heatmap"), dbc.CardBody(dcc.Graph(id='g-heatmap'))], className="shadow-sm border-0 mb-4"), width=12, lg=6),
-                dbc.Col(dbc.Card([dbc.CardHeader("Jours Canicule"), dbc.CardBody(dcc.Graph(id='g-simulateur'))], className="shadow-sm border-0 mb-4"), width=12, lg=6),
-            ])
-        ], width=12, lg=9)
+                # KPI 1 : Moyenne
+                dbc.Col(dbc.Card([
+                    dbc.CardBody([
+                        html.H6("Moyenne (Ville)", className="text-muted small text-uppercase fw-bold"),
+                        html.H2(id="kpi-mean", className="text-primary fw-bold"),
+                    ])
+                ], className="mb-3 text-center shadow-sm border-start border-primary border-4"), width=12, md=4),
+
+                # KPI 2 : Record
+                dbc.Col(dbc.Card([
+                    dbc.CardBody([
+                        html.H6("Record Absolu", className="text-muted small text-uppercase fw-bold"),
+                        html.H2(id="kpi-max", className="text-danger fw-bold"),
+                    ])
+                ], className="mb-3 text-center shadow-sm border-start border-danger border-4"), width=12, md=4),
+
+                # KPI 3 : Delta T (Réchauffement)
+                dbc.Col(dbc.Card([
+                    dbc.CardBody([
+                        html.H6("Réchauffement", className="text-muted small text-uppercase fw-bold"),
+                        html.H2(id="kpi-delta", className="text-warning fw-bold"),
+                        html.Small("Différence 2020 vs 1950", className="text-muted small")
+                    ])
+                ], className="mb-3 text-center shadow-sm border-start border-warning border-4"), width=12, md=4),
+            ]), # <-- Fin de la ligne KPI (N'oublie pas cette virgule !)
+
+            # 2. LES GRAPHIQUES
+            dbc.Card([
+                dbc.CardHeader("Comparatif : Ville vs Région"),
+                dbc.CardBody(dcc.Graph(id='g-compare'))
+            ], className="mb-4 shadow-sm border-0"),
+
+            dbc.Card([
+    dbc.CardHeader("Comparaison Journalière : 1950 vs Année sélectionnée"),
+    dbc.CardBody([
+        dbc.Row([
+            # Graphique de Gauche : 1950
+            dbc.Col([
+                html.H6("Année 1950 (Référence)", className="text-center text-muted fw-bold"),
+                html.Div(  # <-- AJOUT D'UN DIV AVEC HAUTEUR FIXE
+                    dcc.Graph(id='g-detail-ref', config={'displayModeBar': False}),
+                    style={'height': '400px'}  # <-- HAUTEUR FIXE DU CONTENEUR
+                )
+            ], width=12, lg=6),
+
+            # Graphique de Droite : Année Choisie
+            dbc.Col([
+                html.H6(id="titre-zoom-annee", className="text-center text-primary fw-bold"),
+                html.Div(  # <-- MÊME CHOSE ICI
+                    dcc.Graph(id='g-detail-main', config={'displayModeBar': False}),
+                    style={'height': '400px'}
+                )
+            ], width=12, lg=6)
+        ])
+    ])
+], className="mb-4 shadow-sm border-0"),
+            dbc.Card([
+                dbc.CardHeader("Anomalies (Warming Stripes)"),
+                dbc.CardBody([
+                    dbc.Alert("Rouge = Plus chaud que la normale | Bleu = Plus froid", color="light", style={"fontSize": "0.8rem", "padding": "5px"}),
+                    dcc.Graph(id='g-master')
+                ])
+            ], className="mb-4 shadow-sm border-0"),
+
+            dbc.Card([
+                dbc.CardHeader("Heatmap : Évolution des Anomalies Mensuelles"),
+                dbc.CardBody(dcc.Graph(id='g-heatmap'))
+            ], className="shadow-sm border-0 mb-4"),
+
+            dbc.Card([
+                dbc.CardHeader("Fréquence des fortes chaleurs"),
+                dbc.CardBody(dcc.Graph(id='g-simulateur'))
+            ], className="shadow-sm border-0 mb-4"),
+
+        ], width=12, lg=9) # Fin de la colonne de droite
     ])
 ], fluid=True, className="bg-light pb-5")
 
@@ -128,10 +195,17 @@ def update_cities(region, current):
 
 # Graphiques
 @app.callback(
-    [Output('g-compare', 'figure'), Output('g-master', 'figure'),
-     Output('g-detail', 'figure'), Output('g-heatmap', 'figure'),
-     Output('g-simulateur', 'figure'), Output('kpi-mean', 'children'),
-     Output('kpi-max', 'children'), Output('dd-annee', 'value')],
+   [Output('g-compare', 'figure'),
+     Output('g-master', 'figure'),
+     Output('g-detail-ref', 'figure'),  # Gauche
+     Output('g-detail-main', 'figure'), # Droite
+     Output('g-heatmap', 'figure'),
+     Output('g-simulateur', 'figure'),
+     Output('kpi-mean', 'children'),
+     Output('kpi-max', 'children'),
+     Output('kpi-delta', 'children'),
+     Output('dd-annee', 'value'),
+     Output('titre-zoom-annee', 'children')], # Le titre dynamique (11ème output)
     [Input('dd-region', 'value'), Input('dd-ville', 'value'),
      Input('slider-seuil', 'value'), Input('dd-annee', 'value'),
      Input('g-master', 'clickData')]
@@ -154,6 +228,14 @@ def update_charts(region, ville, seuil, annee_dd, click_data):
     kpi_mean = f"{df_vil_year.mean():.1f}°C"
     kpi_max = f"{ts_ville['temp'].max():.1f}°C"
 
+    # On compare la moyenne des 5 premières années vs les 5 dernières pour être robuste
+    start_temp = df_vil_year.iloc[:5].mean() # 1950-1955
+    end_temp = df_vil_year.iloc[-5:].mean()  # 2016-2020 (ou fin dataset)
+    delta = end_temp - start_temp
+
+    # Formatage avec un "+" si positif
+    kpi_delta = f"+{delta:.1f}°C" if delta > 0 else f"{delta:.1f}°C"
+
     # G1 Compare
     fig_c = go.Figure()
     fig_c.add_trace(go.Scatter(x=df_reg.index, y=df_reg, name=f"Moy {region}", line=dict(color='gray', dash='dot')))
@@ -162,12 +244,46 @@ def update_charts(region, ville, seuil, annee_dd, click_data):
     fig_c.update_layout(template="plotly_white", xaxis_title="Année", yaxis_title="Temp (°C)", hovermode="x unified")
 
     # G2 Detail
-    df_d = ts_ville[ts_ville.index.year == annee]
-    fig_d = px.line(df_d, x=df_d.index, y='temp')
-    fig_d.add_hline(y=seuil, line_dash="dash", line_color="red", annotation_text=f"Seuil {seuil}°C")
-    fig_d.update_layout(template="plotly_white", xaxis_title="Date", yaxis_title="Temp (°C)")
+   # Données 1950 (Référence Fixe)
+    df_1950 = ts_ville[ts_ville.index.year == 1950]
+    # Données Année Choisie
+    df_choix = ts_ville[ts_ville.index.year == annee]
 
-    # G3 Anomalies
+  # G3 : ZOOM COMPARATIF (GAUCHE / DROITE)
+    # On récupère la vraie première année dispo (souvent 1950)
+    df_ref = ts_ville[ts_ville.index.year == premiere_annee]
+    df_choix = ts_ville[ts_ville.index.year == annee]
+
+    # Sécurité pour éviter crash si données vides
+    min_y, max_y = 0, 30
+    if not df_ref.empty and not df_choix.empty:
+        min_y = min(df_ref['temp'].min(), df_choix['temp'].min()) - 2
+        max_y = max(df_ref['temp'].max(), df_choix['temp'].max()) + 2
+
+    # Graph Gauche (Référence)
+    fig_ref = px.line(df_ref, x=df_ref.index, y='temp')
+    fig_ref.update_traces(line_color="#3498db")
+    fig_ref.update_layout(
+        template="plotly_white",
+        xaxis_title="Date",
+        yaxis_title="Température (°C)",
+        yaxis_range=[min_y, max_y],
+        height=350,
+        margin=dict(t=10, r=20, l=40, b=40)
+    )
+    # Graph Droite (Actuel)
+    fig_main = px.line(df_choix, x=df_choix.index, y='temp')
+    fig_main.add_hline(y=seuil, line_dash="dash", line_color="red")
+    fig_main.update_traces(line_color="#e74c3c")
+    fig_main.update_layout(
+        template="plotly_white",
+        xaxis_title="Date",
+        yaxis_title="Température (°C)",
+        yaxis_range=[min_y, max_y],
+        height=350,
+        margin=dict(t=10, r=20, l=40, b=40)
+    )
+
     ano = df_vil_year - df_vil_year['1950':'1980'].mean()
     colors = ['#e74c3c' if x > 0 else '#3498db' for x in ano]
     fig_m = go.Figure(data=[go.Bar(x=ano.index.year, y=ano, marker_color=colors, customdata=ano.index.year)])
@@ -227,7 +343,7 @@ def update_charts(region, ville, seuil, annee_dd, click_data):
         coloraxis_showscale=True
     )
 
-    return fig_c, fig_m, fig_d, fig_h, fig_s, kpi_mean, kpi_max, annee
+    return fig_c, fig_m, fig_ref, fig_main, fig_h, fig_s, kpi_mean, kpi_max, kpi_delta, annee, f"Année {annee}"
 
 if __name__ == '__main__':
     app.run(debug=True)
