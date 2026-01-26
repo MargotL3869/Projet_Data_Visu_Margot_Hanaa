@@ -7,76 +7,107 @@ import xarray as xr
 import pandas as pd
 from pathlib import Path
 import sys
+import numpy as np
 
 # =========================================================
-# 1. CHARGEMENT
+# 1. CHARGEMENT ROBUSTE ET PRÉPARATION
 # =========================================================
-base = Path(".")
-possibles = [base, base / "TP", base.parent / "TP", Path("..") / "TP"]
+print("🚀 Démarrage de l'application...")
 
-chemin_villes = None
-chemin_poids = None
+# Gestion des chemins (Code / Data)
+base_script = Path(__file__).resolve().parent
+dossier_data = base_script.parent / "TP"
+
+print(f"📂 Dossier données visé : {dossier_data}")
+
+# Recherche fichier Météo
 fichier_nc = None
+noms_possibles = ["meteo_france_1950_2025.nc", "donnees_carte_75ans_journalier.nc"]
+for nom in noms_possibles:
+    p = dossier_data / nom
+    if p.exists():
+        fichier_nc = p
+        print(f"✅ Météo trouvée : {nom}")
+        break
 
-for p in possibles:
-    if (p / "villes_avec_regions.parquet").exists(): chemin_villes = p / "villes_avec_regions.parquet"
-    if (p / "poids_regions_finie.nc").exists(): chemin_poids = p / "poids_regions_finie.nc"
-    if (p / "meteo_france_1950_2025.nc").exists(): fichier_nc = p / "meteo_france_1950_2025.nc"
-    elif (p / "meteo_france_75ans_final.nc").exists(): fichier_nc = p / "meteo_france_75ans_final.nc"
+# Recherche fichiers annexes
+chemin_villes = dossier_data / "villes_avec_regions.parquet"
+chemin_poids = dossier_data / "weights_bool_precise.nc"
+if not chemin_poids.exists():
+    chemin_poids = dossier_data / "poids_regions_finie.nc"
 
-if not chemin_villes or not fichier_nc:
-    sys.exit("ERREUR : Fichiers manquants. Lancez d'abord 'generer_mapping_villes.py'.")
+# Vérification présence
+if not fichier_nc or not chemin_villes.exists():
+    print(f"❌ ERREUR : Fichiers manquants dans {dossier_data}")
+    # On tente dans le dossier courant au cas où
+    if Path("villes_avec_regions.parquet").exists():
+        chemin_villes = Path("villes_avec_regions.parquet")
+        fichier_nc = Path("meteo_france_1950_2025.nc")
+        chemin_poids = Path("weights_bool_precise.nc")
+        print("⚠️ Utilisation des fichiers du dossier courant (Plan B).")
+    else:
+        sys.exit("Arrêt : Impossible de trouver les fichiers.")
 
 # Chargement Données
+print("⏳ Chargement des données en mémoire...")
 df_villes = pd.read_parquet(chemin_villes)
 
-try:
-    ds = xr.open_dataset(fichier_nc).load()
-    ds_poids = xr.open_dataset(chemin_poids).load()
-except:
-    ds = xr.open_dataset(fichier_nc)
-    ds_poids = xr.open_dataset(chemin_poids)
+# Nettoyage des noms de régions (gestion des accents/espaces)
+df_villes["Region_Assignee"] = df_villes["Region_Assignee"].fillna("Hors Région").astype(str).str.strip()
 
-# Renommage
+try:
+    ds = xr.open_dataset(fichier_nc)
+    # Chargement Poids (Lazy)
+    ds_poids = xr.open_dataset(chemin_poids)
+except Exception as e:
+    sys.exit(f"❌ Erreur lecture NetCDF : {e}")
+
+# Standardisation Noms Variables
 if 'latitude' in ds.coords: ds = ds.rename({'latitude': 'lat', 'longitude': 'lon'})
 if 'latitude' in ds_poids.coords: ds_poids = ds_poids.rename({'latitude': 'lat', 'longitude': 'lon'})
 
-# Température °C
+# Gestion Température (Kelvin -> Celsius)
 var_temp = 'Temperature_C' if 'Temperature_C' in ds else 't2m'
-if ds[var_temp].mean() > 200:
+# Test sur une valeur pour savoir si Kelvin
+val_test = ds[var_temp].isel(time=0, lat=int(ds.lat.size/2), lon=int(ds.lon.size/2)).values
+if val_test > 200:
     ds['temp_c'] = ds[var_temp] - 273.15
 else:
     ds['temp_c'] = ds[var_temp]
 
-# Listes
-liste_regions = sorted(df_villes["Region_Assignee"].dropna().unique().astype(str))
+# Listes pour Dropdowns
+liste_regions = sorted(df_villes["Region_Assignee"].unique())
+# On ajoute une option "Toutes les villes" pour retrouver Marseille/Calais si la région est fausse
+liste_regions.insert(0, "Toutes les régions")
+
 liste_annees = sorted(list(set(pd.to_datetime(ds.time.values).year)))
-premiere_annee = liste_annees[0]
+
+print("✅ Application prête.")
 
 # =========================================================
-# 2. LAYOUT (INTERFACE COMPLETE)
+# 2. INTERFACE (LAYOUT)
 # =========================================================
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUMEN])
 
 app.layout = dbc.Container([
-
-    # --- EN-TÊTE ---
     dbc.Row([
-        dbc.Col(html.H1("Observatoire du Climat Local (1950-2025)", className="text-primary mt-4"), width=12),
-        dbc.Col(dbc.Alert("Comparaison : Température locale vs Moyenne régionale.", color="info"), width=12)
+        dbc.Col(html.H1("Observatoire du Climat Local", className="text-primary mt-4"), width=12),
+        dbc.Col(dbc.Alert("Visualisez l'évolution climatique de votre ville (1950-2025)", color="info"), width=12)
     ]),
 
     dbc.Row([
-        # --- COLONNE DE GAUCHE : PARAMÈTRES ---
+        # COLONNE PARAMÈTRES
         dbc.Col([
             dbc.Card([
-                dbc.CardHeader("🎛️ Paramètres", className="bg-primary text-white"),
+                dbc.CardHeader("Paramètres", className="bg-primary text-white fw-bold"),
                 dbc.CardBody([
                     html.Label("1. Région :", className="fw-bold"),
-                    dcc.Dropdown(id='dd-region', options=[{'label': r, 'value': r} for r in liste_regions], value=liste_regions[0], clearable=False, className="mb-3"),
+                    dcc.Dropdown(id='dd-region', options=[{'label': r, 'value': r} for r in liste_regions],
+                                 value="Toutes les régions", clearable=False, className="mb-3"),
 
                     html.Label("2. Ville :", className="fw-bold"),
-                    dcc.Dropdown(id='dd-ville', options=[], value=None, placeholder="Chargement...", clearable=False, searchable=True, className="mb-3"),
+                    dcc.Dropdown(id='dd-ville', options=[], value=None, placeholder="Cherchez votre ville...",
+                                 clearable=False, searchable=True, className="mb-3"),
 
                     html.Hr(),
                     html.Label("3. Seuil Canicule :", className="fw-bold text-danger"),
@@ -89,272 +120,215 @@ app.layout = dbc.Container([
             ], className="shadow sticky-top", style={"top": "20px"})
         ], width=12, lg=3),
 
-        # --- COLONNE DE DROITE : VISUALISATIONS ---
+        # COLONNE VISUALISATIONS
         dbc.Col([
-
-            # 1. LIGNE DES 3 KPIS
+            # KPIs
             dbc.Row([
-                # KPI 1 : Moyenne
-                dbc.Col(dbc.Card([
-                    dbc.CardBody([
-                        html.H6("Moyenne (Ville)", className="text-muted small text-uppercase fw-bold"),
-                        html.H2(id="kpi-mean", className="text-primary fw-bold"),
-                    ])
-                ], className="mb-3 text-center shadow-sm border-start border-primary border-4"), width=12, md=4),
+                dbc.Col(dbc.Card(dbc.CardBody([html.H6("Moyenne Annuelle", className="text-muted small fw-bold"), html.H2(id="kpi-mean", className="text-primary fw-bold")])), width=12, md=4),
+                dbc.Col(dbc.Card(dbc.CardBody([html.H6("Record Absolu", className="text-muted small fw-bold"), html.H2(id="kpi-max", className="text-danger fw-bold"), html.Small(id="kpi-max-date", className="text-muted")])), width=12, md=4),
+                dbc.Col(dbc.Card(dbc.CardBody([html.H6("Réchauffement (+75 ans)", className="text-muted small fw-bold"), html.H2(id="kpi-delta", className="text-warning fw-bold"), html.Small("Différence 2020-2025 vs 1950-1955", className="text-muted small")])), width=12, md=4),
+            ], className="mb-3"),
 
-                # KPI 2 : Record
-                dbc.Col(dbc.Card([
-                    dbc.CardBody([
-                        html.H6("Record Température", className="text-muted small text-uppercase fw-bold"),
-                        html.H2(id="kpi-max", className="text-danger fw-bold"),
-                        html.Small(id="kpi-max-date", className="text-muted")
-                    ])
-                ], className="mb-3 text-center shadow-sm border-start border-danger border-4"), width=12, md=4),
-
-                # KPI 3 : Delta T (Réchauffement)
-                dbc.Col(dbc.Card([
-                    dbc.CardBody([
-                        html.H6("Réchauffement", className="text-muted small text-uppercase fw-bold"),
-                        html.H2(id="kpi-delta", className="text-warning fw-bold"),
-                        html.Small("Différence 2025 vs 1950", className="text-muted small")
-                    ])
-                ], className="mb-3 text-center shadow-sm border-start border-warning border-4"), width=12, md=4),
-            ]),
-
-            # 2. LES GRAPHIQUES
-            dbc.Card([
-                dbc.CardHeader("Comparatif : Ville vs Région"),
-                dbc.CardBody(dcc.Graph(id='g-compare'))
-            ], className="mb-4 shadow-sm border-0"),
-
-            dbc.Card([
-    dbc.CardHeader("Comparaison Journalière : 1950 vs Année sélectionnée"),
-    dbc.CardBody([
-        dbc.Row([
-            # Graphique de Gauche : 1950
-            dbc.Col([
-                html.H6("Année 1950 (Référence)", className="text-center text-muted fw-bold"),
-                html.Div(  # <-- AJOUT D'UN DIV AVEC HAUTEUR FIXE
-                    dcc.Graph(id='g-detail-ref', config={'displayModeBar': False}),
-                    style={'height': '400px'}  # <-- HAUTEUR FIXE DU CONTENEUR
-                )
-            ], width=12, lg=6),
-
-            # Graphique de Droite : Année Choisie
-            dbc.Col([
-                html.H6(id="titre-zoom-annee", className="text-center text-primary fw-bold"),
-                html.Div(  # <-- MÊME CHOSE ICI
-                    dcc.Graph(id='g-detail-main', config={'displayModeBar': False}),
-                    style={'height': '400px'}
-                )
-            ], width=12, lg=6)
-        ])
-    ])
-], className="mb-4 shadow-sm border-0"),
-            dbc.Card([
-                dbc.CardHeader("Anomalies (Warming Stripes)"),
-                dbc.CardBody([
-                    dbc.Alert("Rouge = Plus chaud que la normale | Bleu = Plus froid", color="light", style={"fontSize": "0.8rem", "padding": "5px"}),
-                    dcc.Graph(id='g-master')
-                ])
-            ], className="mb-4 shadow-sm border-0"),
-
-            dbc.Card([
-                dbc.CardHeader("Heatmap : Évolution des Anomalies Mensuelles"),
-                dbc.CardBody(dcc.Graph(id='g-heatmap'))
-            ], className="shadow-sm border-0 mb-4"),
-
-            dbc.Card([
-                dbc.CardHeader("Fréquence des fortes chaleurs"),
-                dbc.CardBody(dcc.Graph(id='g-simulateur'))
-            ], className="shadow-sm border-0 mb-4"),
-
-        ], width=12, lg=9) # Fin de la colonne de droite
+            # ONGLETS
+            dbc.Tabs([
+                dbc.Tab(label="Synthèse", tab_id="tab-synthese", children=[
+                    dbc.Card([dbc.CardHeader("Anomalies (Warming Stripes)"), dbc.CardBody(dcc.Graph(id='g-master'))], className="mb-4 mt-3 shadow-sm border-0"),
+                    dbc.Card([dbc.CardHeader("Comparatif : Ville vs Moyenne Régionale"), dbc.CardBody(dcc.Graph(id='g-compare'))], className="mb-4 shadow-sm border-0"),
+                ]),
+                dbc.Tab(label="Saisonnalité", tab_id="tab-saisons", children=[
+                    dbc.Card([dbc.CardHeader("Évolution par Saison"), dbc.CardBody(dcc.Graph(id='g-saisons'))], className="mb-4 mt-3 shadow-sm border-0"),
+                ]),
+                dbc.Tab(label="Détails", tab_id="tab-details", children=[
+                     dbc.Card([dbc.CardHeader("Heatmap Mensuelle"), dbc.CardBody(dcc.Graph(id='g-heatmap'))], className="shadow-sm border-0 mb-4 mt-3"),
+                     dbc.Card([dbc.CardHeader("Zoom Journalier"), dbc.CardBody(dbc.Row([
+                         dbc.Col(dcc.Graph(id='g-detail-ref'), width=12, lg=6),
+                         dbc.Col(dcc.Graph(id='g-detail-main'), width=12, lg=6)
+                     ]))], className="mb-4 shadow-sm border-0"),
+                ]),
+                dbc.Tab(label="Impacts", tab_id="tab-impacts", children=[
+                    dbc.Card([dbc.CardHeader("Jours de Canicule"), dbc.CardBody(dcc.Graph(id='g-simulateur'))], className="shadow-sm border-0 mb-4 mt-3"),
+                ]),
+            ], id="tabs", active_tab="tab-synthese")
+        ], width=12, lg=9)
     ])
 ], fluid=True, className="bg-light pb-5")
 
+
 # =========================================================
-# 3. CALLBACKS
+# 3. CALLBACKS INTELLIGENTS
 # =========================================================
 
-# Filtre Villes
+# Mise à jour liste des villes (Avec option "Toutes")
 @app.callback(
     [Output('dd-ville', 'options'), Output('dd-ville', 'value')],
     [Input('dd-region', 'value')],
     [State('dd-ville', 'value')]
 )
 def update_cities(region, current):
-    if not region: return [], None
+    if not region:
+        return [], None
 
-    # Filtre Pandas instantané grâce au fichier pré-calculé
-    df_f = df_villes[df_villes["Region_Assignee"] == region]
+    if region == "Toutes les régions":
+        df_f = df_villes # Pas de filtre
+    else:
+        df_f = df_villes[df_villes["Region_Assignee"] == region]
+
+    # Tri alphabétique pour faciliter la recherche
+    df_f = df_f.sort_values("label")
+
     opts = [{'label': r['label'], 'value': r['label']} for _, r in df_f.iterrows()]
 
+    # On garde la ville sélectionnée si elle est dans la nouvelle liste, sinon on prend la première
     vals = [o['value'] for o in opts]
-    val = current if current in vals else (vals[0] if vals else None)
+    if current in vals:
+        val = current
+    elif vals:
+        val = vals[0]
+    else:
+        val = None
+
     return opts, val
 
-# Graphiques
+# Mise à jour des Graphiques (Coeur du problème)
 @app.callback(
-   [Output('g-compare', 'figure'),
-     Output('g-master', 'figure'),
-     Output('g-detail-ref', 'figure'),  # Gauche
-     Output('g-detail-main', 'figure'), # Droite
-     Output('g-heatmap', 'figure'),
-     Output('g-simulateur', 'figure'),
-     Output('kpi-mean', 'children'),
-     Output('kpi-max', 'children'),
-     Output('kpi-max-date', 'children'),
-     Output('kpi-delta', 'children'),
-     Output('dd-annee', 'value'),
-     Output('titre-zoom-annee', 'children')],
-    [Input('dd-region', 'value'), Input('dd-ville', 'value'),
-     Input('slider-seuil', 'value'), Input('dd-annee', 'value'),
-     Input('g-master', 'clickData')]
+   [Output('g-compare', 'figure'), Output('g-master', 'figure'),
+    Output('g-detail-ref', 'figure'), Output('g-detail-main', 'figure'),
+    Output('g-heatmap', 'figure'), Output('g-simulateur', 'figure'), Output('g-saisons', 'figure'),
+    Output('kpi-mean', 'children'), Output('kpi-max', 'children'), Output('kpi-max-date', 'children'), Output('kpi-delta', 'children'),
+    Output('dd-annee', 'value')],
+   [Input('dd-region', 'value'), Input('dd-ville', 'value'),
+    Input('slider-seuil', 'value'), Input('dd-annee', 'value'), Input('g-master', 'clickData')]
 )
 def update_charts(region, ville, seuil, annee_dd, click_data):
-    if not ville: return [go.Figure()] * 5 + ["-", "-", annee_dd]
+    if not ville: return [go.Figure()] * 7 + ["-", "-", "-", "-", annee_dd]
 
-    trigger = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else ''
-    annee = click_data['points'][0]['customdata'] if (trigger == 'g-master' and click_data) else annee_dd
+    annee = click_data['points'][0]['customdata'] if (ctx.triggered_id == 'g-master' and click_data) else annee_dd
 
-    # Données
-    mask = ds_poids['weights'].sel(region=region)
-    df_reg = (ds['temp_c'] * mask).sum(['lat', 'lon']) / mask.sum(['lat', 'lon'])
-    df_reg = df_reg.to_dataframe(name='temp').resample('YE')['temp'].mean()
+    # ----------------------------------------------------
+    # 1. EXTRACTION RÉGIONALE (Protection crash)
+    # ----------------------------------------------------
+    try:
+        # On essaie de récupérer la moyenne régionale
+        # Attention : le fichier de poids peut avoir 'mask', 'weights' ou 'region'
+        if region != "Toutes les régions" and 'mask' in ds_poids and region in ds_poids.coords.get('region', []):
+            mask_data = ds_poids['mask'].sel(region=region)
+            df_reg = (ds['temp_c'] * mask_data).sum(['lat', 'lon']) / mask_data.sum(['lat', 'lon'])
+        elif region != "Toutes les régions" and 'weights' in ds_poids and region in ds_poids.coords.get('region', []):
+             mask_data = ds_poids['weights'].sel(region=region)
+             df_reg = (ds['temp_c'] * mask_data).sum(['lat', 'lon']) / mask_data.sum(['lat', 'lon'])
+        else:
+            # Fallback : Si erreur ou "Toutes les régions", on fait une moyenne nationale simple
+            # pour éviter que le graphe ne plante
+            df_reg = ds['temp_c'].mean(['lat', 'lon'])
 
-    row = df_villes[df_villes['label'] == ville].iloc[0]
-    ts_ville = ds['temp_c'].sel(lat=row['lat'], lon=row['lon'], method='nearest').to_dataframe(name='temp')
-    df_vil_year = ts_ville.resample('YE')['temp'].mean()
+        df_reg = df_reg.to_dataframe(name='temp').resample('YE')['temp'].mean()
 
-    kpi_mean = f"{df_vil_year.mean():.1f}°C"
+    except Exception as e:
+        print(f"⚠️ Erreur Région ({e}). Passage en moyenne globale.")
+        df_reg = ds['temp_c'].mean(['lat', 'lon']).to_dataframe(name='temp').resample('YE')['temp'].mean()
 
-    valeur_max = ts_ville['temp'].max()
-    kpi_max = f"{valeur_max:.1f}°C"
+    # ----------------------------------------------------
+    # 2. EXTRACTION VILLE (Correction Frontières / Mer)
+    # ----------------------------------------------------
+    try:
+        row = df_villes[df_villes['label'] == ville].iloc[0]
+        t_lat, t_lon = row['lat'], row['lon']
 
-    # On trouve l'index (la date) où la température était maximale
-    date_obj = ts_ville['temp'].idxmax()
+        # STRATÉGIE "LARGE": On ne prend pas le point exact (qui peut être NaN).
+        # On prend un carré autour de la ville et on moyenne les points valides.
 
-    # On formate la date en français (Jour/Mois/Année)
-    date_str = date_obj.strftime("%d/%m/%Y")
-    kpi_max_date = f"Enregistré le {date_str}"
+        # Rayon de recherche initial : 0.25 degrés (~25km)
+        offset = 0.25
+        subset = ds['temp_c'].sel(lat=slice(t_lat - offset, t_lat + offset),
+                                  lon=slice(t_lon - offset, t_lon + offset))
 
-    # On compare la moyenne des 5 premières années vs les 5 dernières pour être robuste
-    start_temp = df_vil_year.iloc[:5].mean() # 1950-1955
-    end_temp = df_vil_year.iloc[-5:].mean()  # 2016-2025 (ou fin dataset)
-    delta = end_temp - start_temp
+        # Si vide (ex: ville côtière ou frontière stricte), on élargit à 100km
+        if subset.isnull().all() or subset.mean().isnull():
+            offset = 0.8
+            subset = ds['temp_c'].sel(lat=slice(t_lat - offset, t_lat + offset),
+                                      lon=slice(t_lon - offset, t_lon + offset))
 
-    # Formatage avec un "+" si positif
-    kpi_delta = f"+{delta:.1f}°C" if delta > 0 else f"{delta:.1f}°C"
+        if subset.isnull().all():
+             raise ValueError("Aucune donnée météo trouvée autour de cette coordonnée.")
+
+        # Moyenne des points trouvés (ignore automatiquement les NaNs)
+        ts_ville = subset.mean(['lat', 'lon']).to_dataframe(name='temp')
+        df_vil_year = ts_ville.resample('YE')['temp'].mean()
+
+    except Exception as e:
+        print(f"❌ Erreur Ville {ville}: {e}")
+        err_fig = go.Figure().add_annotation(text="Données indisponibles pour cette zone", showarrow=False)
+        return [err_fig] * 7 + ["Erreur", "Erreur", "-", "Erreur", annee]
+
+    # ----------------------------------------------------
+    # 3. GÉNÉRATION DES GRAPHIQUES (Standard)
+    # ----------------------------------------------------
 
     # G1 Compare
     fig_c = go.Figure()
-    fig_c.add_trace(go.Scatter(x=df_reg.index, y=df_reg, name=f"Moy {region}", line=dict(color='gray', dash='dot')))
-    fig_c.add_trace(go.Scatter(x=df_vil_year.index, y=df_vil_year, name="Ville", line=dict(color='#2c3e50', width=3)))
-    fig_c.add_annotation(x=df_vil_year.idxmax(), y=df_vil_year.max(), text="Record", showarrow=True, arrowhead=1)
-    fig_c.update_layout(template="plotly_white", xaxis_title="Année", yaxis_title="Temp (°C)", hovermode="x unified")
+    fig_c.add_trace(go.Scatter(x=df_reg.index, y=df_reg, name=f"Moyenne Régionale", line=dict(color='gray', dash='dot')))
+    fig_c.add_trace(go.Scatter(x=df_vil_year.index, y=df_vil_year, name=ville, line=dict(color='#2c3e50', width=3)))
+    fig_c.update_layout(template="plotly_white", xaxis_title="Année", yaxis_title="°C", margin=dict(l=40, r=20, t=20, b=40))
 
-    # G2 Detail
-   # Données 1950 (Référence Fixe)
-    df_1950 = ts_ville[ts_ville.index.year == 1950]
-    # Données Année Choisie
-    df_choix = ts_ville[ts_ville.index.year == annee]
-
-  # G3 : ZOOM COMPARATIF (GAUCHE / DROITE)
-    # On récupère la vraie première année dispo (souvent 1950)
-    df_ref = ts_ville[ts_ville.index.year == premiere_annee]
-    df_choix = ts_ville[ts_ville.index.year == annee]
-
-    # Sécurité pour éviter crash si données vides
-    min_y, max_y = 0, 30
-    if not df_ref.empty and not df_choix.empty:
-        min_y = min(df_ref['temp'].min(), df_choix['temp'].min()) - 2
-        max_y = max(df_ref['temp'].max(), df_choix['temp'].max()) + 2
-
-    # Graph Gauche (Référence)
-    fig_ref = px.line(df_ref, x=df_ref.index, y='temp')
-    fig_ref.update_traces(line_color="#3498db")
-    fig_ref.update_layout(
-        template="plotly_white",
-        xaxis_title="Date",
-        yaxis_title="Température (°C)",
-        yaxis_range=[min_y, max_y],
-        height=350,
-        margin=dict(t=10, r=20, l=40, b=40)
-    )
-    # Graph Droite (Actuel)
-    fig_main = px.line(df_choix, x=df_choix.index, y='temp')
-    fig_main.add_hline(y=seuil, line_dash="dash", line_color="red")
-    fig_main.update_traces(line_color="#e74c3c")
-    fig_main.update_layout(
-        template="plotly_white",
-        xaxis_title="Date",
-        yaxis_title="Température (°C)",
-        yaxis_range=[min_y, max_y],
-        height=350,
-        margin=dict(t=10, r=20, l=40, b=40)
-    )
-
+    # G2 Warming Stripes
     ano = df_vil_year - df_vil_year['1950':'1980'].mean()
     colors = ['#e74c3c' if x > 0 else '#3498db' for x in ano]
     fig_m = go.Figure(data=[go.Bar(x=ano.index.year, y=ano, marker_color=colors, customdata=ano.index.year)])
     if 2003 in ano.index.year: fig_m.add_annotation(x=2003, y=ano.loc[ano.index.year==2003].iloc[0], text="2003", showarrow=True, arrowhead=2, ay=-30)
-    fig_m.update_layout(template="plotly_white", xaxis_title="Année", yaxis_title="Écart (°C)", showlegend=False)
+    fig_m.update_layout(template="plotly_white", xaxis_title="Année", yaxis_title="Écart", showlegend=False, margin=dict(l=40, r=20, t=20, b=40))
 
-   # G4 : HEATMAP (Avec chiffres parlants au survol)
+    # Zoom data
+    df_ref = ts_ville[ts_ville.index.year == liste_annees[0]]
+    df_choix = ts_ville[ts_ville.index.year == annee]
+    min_y = min(df_ref['temp'].min(), df_choix['temp'].min()) - 2 if not df_ref.empty else 0
+    max_y = max(df_ref['temp'].max(), df_choix['temp'].max()) + 2 if not df_ref.empty else 30
+
+    # G3 Detail Ref
+    fig_ref = px.line(df_ref, x=df_ref.index, y='temp', title=f"Année {liste_annees[0]}")
+    fig_ref.update_layout(template="plotly_white", yaxis_range=[min_y, max_y], height=300, margin=dict(l=40, r=20, t=40, b=40))
+
+    # G4 Detail Main
+    fig_main = px.line(df_choix, x=df_choix.index, y='temp', title=f"Année {annee}")
+    fig_main.add_hline(y=seuil, line_dash="dash", line_color="red")
+    fig_main.update_layout(template="plotly_white", yaxis_range=[min_y, max_y], height=300, margin=dict(l=40, r=20, t=40, b=40))
+
+    # G5 Heatmap
     hm = ts_ville.copy()
     hm['Y'], hm['M'] = hm.index.year, hm.index.month
-
-    # 1. Calculs (Année vs Moyenne 1950-1980)
     data_brute = hm.groupby(['Y', 'M'])['temp'].mean().unstack()
     ref_period = hm[hm['Y'].between(1950, 1980)]
     moyennes_mensuelles = ref_period.groupby('M')['temp'].mean()
     data_ecart = data_brute - moyennes_mensuelles.values
 
-    # 2. Création Graphique
-    fig_h = px.imshow(
-        data_ecart,
-        labels=dict(x="Mois", y="Année", color="Écart"),
-        color_continuous_scale="RdBu_r", # Rouge=Chaud, Bleu=Froid
-        origin='lower',
-        aspect="auto",
-        zmin=-4, zmax=4, # Borne l'échelle pour bien voir les contrastes
-    )
+    fig_h = px.imshow(data_ecart, labels=dict(x="Mois", y="Année", color="Écart"), color_continuous_scale="RdBu_r", origin='lower', aspect="auto", zmin=-4, zmax=4)
+    fig_h.update_layout(template="plotly_white", height=400, margin=dict(l=40, r=20, t=20, b=40))
 
-    # 3. Personnalisation "Parlante"
-    # On change le format des mois (1 -> Janvier) pour l'axe X
-    fig_h.update_xaxes(
-        tickmode='array',
-        tickvals=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-        ticktext=["Janv", "Févr", "Mars", "Avr", "Mai", "Juin", "Juil", "Août", "Sept", "Oct", "Nov", "Déc"]
-    )
-
-    fig_h.update_layout(
-        template="plotly_white",
-        height=500, # HAUTEUR FORCÉE
-        coloraxis_colorbar=dict(title="Écart", tickvals=[-4, 0, 4], ticktext=["Froid", "Normal", "Chaud"])
-    )
-
-    # Infobulle parlante
-    fig_h.update_traces(
-        hovertemplate="<b>%{y} - %{x}</b><br>Écart : <b>%{z:+.1f}°C</b><extra></extra>"
-    )
-
-
-    # G5 Simul
+    # G6 Canicule
     days = ts_ville[ts_ville['temp'] > seuil].resample('YE')['temp'].count().reindex(df_vil_year.index, fill_value=0)
     fig_s = px.bar(x=days.index.year, y=days.values, color=days.values, color_continuous_scale="OrRd")
-    fig_s.update_layout(template="plotly_white", xaxis_title="Année", yaxis_title="Jours > Seuil", coloraxis_showscale=False)
+    fig_s.update_layout(template="plotly_white", xaxis_title="Année", yaxis_title="Jours", margin=dict(l=40, r=20, t=20, b=40))
 
-    fig_s.update_layout(
-        template="plotly_white",
-        xaxis_title="Année",
-        yaxis_title=f"Jours > {seuil}°C",
-        coloraxis_colorbar=dict(title="Jours"),
-        coloraxis_showscale=True
-    )
+    # G7 Saisons
+    df_saison = ts_ville.copy()
+    saison_map = {12:'Hiver', 1:'Hiver', 2:'Hiver', 3:'Printemps', 4:'Printemps', 5:'Printemps', 6:'Été', 7:'Été', 8:'Été', 9:'Automne', 10:'Automne', 11:'Automne'}
+    df_saison['Saison'] = df_saison.index.month.map(saison_map)
+    df_saison_yearly = df_saison.groupby([df_saison.index.year, 'Saison'])['temp'].mean().unstack()
 
-    return fig_c, fig_m, fig_ref, fig_main, fig_h, fig_s, kpi_mean, kpi_max, kpi_max_date, kpi_delta, annee, f"Année {annee}"
+    fig_saisons = go.Figure()
+    colors_saisons = {'Hiver': '#3498db', 'Printemps': '#2ecc71', 'Été': '#e74c3c', 'Automne': '#e67e22'}
+    for s in ['Hiver', 'Printemps', 'Été', 'Automne']:
+        if s in df_saison_yearly.columns:
+            fig_saisons.add_trace(go.Scatter(x=df_saison_yearly.index, y=df_saison_yearly[s], name=s, mode='lines'))
+    fig_saisons.update_layout(template="plotly_white", xaxis_title="Année", margin=dict(l=40, r=20, t=20, b=40))
+
+    # KPIs
+    kpi_mean = f"{df_vil_year.mean():.1f}°C"
+    kpi_max = f"{ts_ville['temp'].max():.1f}°C"
+    kpi_max_date = f"Le {ts_ville['temp'].idxmax().strftime('%d/%m/%Y')}"
+    delta = df_vil_year.iloc[-5:].mean() - df_vil_year.iloc[:5].mean()
+    kpi_delta = f"+{delta:.1f}°C" if delta > 0 else f"{delta:.1f}°C"
+
+    return fig_c, fig_m, fig_ref, fig_main, fig_h, fig_s, fig_saisons, kpi_mean, kpi_max, kpi_max_date, kpi_delta, annee
 
 if __name__ == '__main__':
     app.run(debug=True)
