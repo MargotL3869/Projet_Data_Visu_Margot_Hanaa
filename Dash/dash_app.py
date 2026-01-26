@@ -22,7 +22,7 @@ for p in possibles:
     if (p / "villes_avec_regions.parquet").exists(): chemin_villes = p / "villes_avec_regions.parquet"
     if (p / "poids_regions_finie.nc").exists(): chemin_poids = p / "poids_regions_finie.nc"
     if (p / "donnees_carte_70ans_journalier.nc").exists(): fichier_nc = p / "donnees_carte_70ans_journalier.nc"
-    elif (p / "meteo_france_70ans_final.nc").exists(): fichier_nc = p / "meteo_france_70ans_final.nc"
+    elif (p / "meteo_france_1950_2025.nc").exists(): fichier_nc = p / "meteo_france_1950_2025.nc"
 
 if not chemin_villes or not fichier_nc:
     sys.exit("ERREUR : Fichiers manquants. Lancez d'abord 'generer_mapping_villes.py'.")
