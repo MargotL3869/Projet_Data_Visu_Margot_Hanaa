@@ -6,7 +6,7 @@ graphique de courbe d'anomalie de la ville du maire : Nuage de Points Temporel
 
 Une carte de chaleur de la ville
 
-Le "Simulateur de Seuils Critiques" (Slider Interactif) 🎚️
+Le "Simulateur de Seuils Critiques" (Slider Interactif)
 Au lieu de figer la définition d'une canicule, tu laisses le maire choisir sa propre limite.
 Le Concept : Un histogramme montrant le nombre de jours par an dépassant une certaine température.
 On peut comparer des périodes : Histogramme de Fréquence Interactif
@@ -18,4 +18,7 @@ KPI utiles :
 - moyenne historique des températures
 - record absolu
 - nbr de degré pris en faisant 2020 - 1950
--
+
+Onglet :
+- Comparaison des Villes : Comparer la ville du maire avec la region
+- Comparaison par regions : Comparer la région du maire avec d'autres régions

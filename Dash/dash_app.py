@@ -62,7 +62,7 @@ app.layout = dbc.Container([
 
     # --- EN-TÊTE ---
     dbc.Row([
-        dbc.Col(html.H1("Observatoire du Climat Local (1950-2020)", className="text-primary mt-4"), width=12),
+        dbc.Col(html.H1("Observatoire du Climat Local (1950-2025)", className="text-primary mt-4"), width=12),
         dbc.Col(dbc.Alert("Comparaison : Température locale vs Moyenne régionale.", color="info"), width=12)
     ]),
 
@@ -115,10 +115,10 @@ app.layout = dbc.Container([
                     dbc.CardBody([
                         html.H6("Réchauffement", className="text-muted small text-uppercase fw-bold"),
                         html.H2(id="kpi-delta", className="text-warning fw-bold"),
-                        html.Small("Différence 2020 vs 1950", className="text-muted small")
+                        html.Small("Différence 2025 vs 1950", className="text-muted small")
                     ])
                 ], className="mb-3 text-center shadow-sm border-start border-warning border-4"), width=12, md=4),
-            ]), # <-- Fin de la ligne KPI (N'oublie pas cette virgule !)
+            ]),
 
             # 2. LES GRAPHIQUES
             dbc.Card([
@@ -226,11 +226,12 @@ def update_charts(region, ville, seuil, annee_dd, click_data):
     df_vil_year = ts_ville.resample('YE')['temp'].mean()
 
     kpi_mean = f"{df_vil_year.mean():.1f}°C"
-    kpi_max = f"{ts_ville['temp'].max():.1f}°C"
+    record_absolu = ts_ville['temp'].max()
+    kpi_max = f"{record_absolu:.1f}°C"
 
     # On compare la moyenne des 5 premières années vs les 5 dernières pour être robuste
     start_temp = df_vil_year.iloc[:5].mean() # 1950-1955
-    end_temp = df_vil_year.iloc[-5:].mean()  # 2016-2020 (ou fin dataset)
+    end_temp = df_vil_year.iloc[-5:].mean()  # 2016-2025 (ou fin dataset)
     delta = end_temp - start_temp
 
     # Formatage avec un "+" si positif
