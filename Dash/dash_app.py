@@ -105,8 +105,9 @@ app.layout = dbc.Container([
                 # KPI 2 : Record
                 dbc.Col(dbc.Card([
                     dbc.CardBody([
-                        html.H6("Record Absolu", className="text-muted small text-uppercase fw-bold"),
+                        html.H6("Record Température", className="text-muted small text-uppercase fw-bold"),
                         html.H2(id="kpi-max", className="text-danger fw-bold"),
+                        html.Small(id="kpi-max-date", className="text-muted")
                     ])
                 ], className="mb-3 text-center shadow-sm border-start border-danger border-4"), width=12, md=4),
 
@@ -203,9 +204,10 @@ def update_cities(region, current):
      Output('g-simulateur', 'figure'),
      Output('kpi-mean', 'children'),
      Output('kpi-max', 'children'),
+     Output('kpi-max-date', 'children'),
      Output('kpi-delta', 'children'),
      Output('dd-annee', 'value'),
-     Output('titre-zoom-annee', 'children')], # Le titre dynamique (11ème output)
+     Output('titre-zoom-annee', 'children')],
     [Input('dd-region', 'value'), Input('dd-ville', 'value'),
      Input('slider-seuil', 'value'), Input('dd-annee', 'value'),
      Input('g-master', 'clickData')]
@@ -226,8 +228,16 @@ def update_charts(region, ville, seuil, annee_dd, click_data):
     df_vil_year = ts_ville.resample('YE')['temp'].mean()
 
     kpi_mean = f"{df_vil_year.mean():.1f}°C"
-    record_absolu = ts_ville['temp'].max()
-    kpi_max = f"{record_absolu:.1f}°C"
+
+    valeur_max = ts_ville['temp'].max()
+    kpi_max = f"{valeur_max:.1f}°C"
+
+    # On trouve l'index (la date) où la température était maximale
+    date_obj = ts_ville['temp'].idxmax()
+
+    # On formate la date en français (Jour/Mois/Année)
+    date_str = date_obj.strftime("%d/%m/%Y")
+    kpi_max_date = f"Enregistré le {date_str}"
 
     # On compare la moyenne des 5 premières années vs les 5 dernières pour être robuste
     start_temp = df_vil_year.iloc[:5].mean() # 1950-1955
@@ -344,7 +354,7 @@ def update_charts(region, ville, seuil, annee_dd, click_data):
         coloraxis_showscale=True
     )
 
-    return fig_c, fig_m, fig_ref, fig_main, fig_h, fig_s, kpi_mean, kpi_max, kpi_delta, annee, f"Année {annee}"
+    return fig_c, fig_m, fig_ref, fig_main, fig_h, fig_s, kpi_mean, kpi_max, kpi_max_date, kpi_delta, annee, f"Année {annee}"
 
 if __name__ == '__main__':
     app.run(debug=True)
