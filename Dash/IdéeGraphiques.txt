@@ -22,3 +22,4 @@ KPI utiles :
 Onglet :
 - Comparaison des Villes : Comparer la ville du maire avec la region
 - Comparaison par regions : Comparer la région du maire avec d'autres régions
+- Comparaison des saisons
