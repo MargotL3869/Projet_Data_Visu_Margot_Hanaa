@@ -126,7 +126,7 @@ app.layout = dbc.Container([
             dbc.Row([
                 dbc.Col(dbc.Card(dbc.CardBody([html.H6("Moyenne Annuelle", className="text-muted small fw-bold"), html.H2(id="kpi-mean", className="text-primary fw-bold")])), width=12, md=4),
                 dbc.Col(dbc.Card(dbc.CardBody([html.H6("Record Absolu", className="text-muted small fw-bold"), html.H2(id="kpi-max", className="text-danger fw-bold"), html.Small(id="kpi-max-date", className="text-muted")])), width=12, md=4),
-                dbc.Col(dbc.Card(dbc.CardBody([html.H6("Réchauffement (+75 ans)", className="text-muted small fw-bold"), html.H2(id="kpi-delta", className="text-warning fw-bold"), html.Small("Différence 2020-2025 vs 1950-1955", className="text-muted small")])), width=12, md=4),
+                dbc.Col(dbc.Card(dbc.CardBody([html.H6("Réchauffement (+75 ans)", className="text-muted small fw-bold"), html.H2(id="kpi-delta", className="text-warning fw-bold"), html.Small("Différence 2020-25 vs 1950-55", className="text-muted small")])), width=12, md=4),
             ], className="mb-3"),
 
             # ONGLETS
