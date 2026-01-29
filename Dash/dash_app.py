@@ -9,9 +9,8 @@ from pathlib import Path
 import sys
 import numpy as np
 
-# =========================================================
-# 1. CHARGEMENT ROBUSTE
-# =========================================================
+# 1. CHARGEMENT DES DONNÉES
+
 print(">> Demarrage de l'application...")
 
 base_script = Path(__file__).resolve().parent
@@ -81,16 +80,16 @@ THEME_COLOR = "#64748B"
 
 print("[OK] Application prete.")
 
-# =========================================================
-# 2. INTERFACE (LAYOUT)
-# =========================================================
+
+# 2. INTERFACE UTILISATEUR
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUMEN])
 
 app.layout = dbc.Container([
     # En-tête
     dbc.Row([
 dbc.Col(html.H1("Observatoire du Climat Local", className="mt-4 fw-bold", style={"color": THEME_COLOR}), width=8),        dbc.Col([
-            dbc.Label("Mode Synthese (Elu)", className="fw-bold me-2"),
+            dbc.Label("Mode Elu", className="fw-bold me-2"),
             dbc.Switch(id="switch-mode-elu", value=False, className="d-inline-block", style={"transform": "scale(1.5)"})
         ], width=4, className="text-end mt-4")
     ]),
@@ -161,9 +160,8 @@ dbc.CardHeader("Parametres", className="text-white fw-bold", style={"backgroundC
 ], fluid=True, className="bg-light pb-5")
 
 
-# =========================================================
+
 # 3. CALLBACKS
-# =========================================================
 
 # Gestion Villes
 @app.callback(
@@ -203,7 +201,7 @@ def update_cities(region, current):
     Input('g-master', 'clickData'), Input('switch-mode-elu', 'value')]
 )
 def update_charts(region, ville, seuil, annee_dd, click_data, mode_elu):
-    # --- STYLE PAR DEFAUT (IMPORTANT : None au lieu de block pour les onglets) ---
+    # --- STYLE PAR DEFAUT  ---
     style_resume = {'display': 'none'}
     style_sidebar = {'display': 'block'}
     width_graphs = 9
@@ -245,7 +243,7 @@ def update_charts(region, ville, seuil, annee_dd, click_data, mode_elu):
         err = go.Figure().add_annotation(text="Donnees indisponibles", showarrow=False)
         return [err]*7 + ["Err", "Err", "-", "Err", annee, "", style_resume, style_sidebar, width_graphs, style_tabs_complex, style_tabs_complex]
 
-    # KPIs
+    # Calcul des KPIs
     kpi_mean = f"{df_vil_year.mean():.1f}°C"
     val_max = ts_ville['temp'].max()
     kpi_max = f"{val_max:.1f}°C"
@@ -272,7 +270,7 @@ def update_charts(region, ville, seuil, annee_dd, click_data, mode_elu):
         # Record
         annee_record = ts_ville['temp'].idxmax().year
 
-        # 2. Création de la Carte de Synthèse (Design #64748B)
+        # 2. Création de la Carte de Synthèse
         couleur_cadre = "#64748B"
 
         texte_resume = dbc.Card([
@@ -319,7 +317,9 @@ def update_charts(region, ville, seuil, annee_dd, click_data, mode_elu):
             ])
         ], className="shadow-lg border-0 mb-4")
 
+
     # --- GRAPHIQUES ---
+
     # G1 Compare
     fig_c = go.Figure()
     if not mode_elu:
@@ -351,7 +351,7 @@ def update_charts(region, ville, seuil, annee_dd, click_data, mode_elu):
     fig_main.add_hline(y=seuil, line_dash="dash", line_color="red")
     fig_main.update_layout(template="plotly_white", yaxis_range=[min_y, max_y], height=300, margin=dict(l=40, r=20, t=40, b=40))
 
-    # G5 Heatmap (SANS BETWEEN)
+    # G5 Heatmap
     hm = ts_ville.copy()
     hm['Y'], hm['M'] = hm.index.year, hm.index.month
     data_brute = hm.groupby(['Y', 'M'])['temp'].mean().unstack()
