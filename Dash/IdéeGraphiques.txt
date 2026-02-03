@@ -23,6 +23,7 @@ Onglet :
 - Comparaison des Villes : Comparer la ville du maire avec la region
 - Comparaison par regions : Comparer la région du maire avec d'autres régions
 - Comparaison des saisons
+Ajout
 - Comparaison de 2 villes ou plus
 - Precipitations, causalités
 - Ajout dans onglet impact : nbr jour de gel
