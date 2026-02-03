@@ -23,6 +23,11 @@ Onglet :
 - Comparaison des Villes : Comparer la ville du maire avec la region
 - Comparaison par regions : Comparer la région du maire avec d'autres régions
 - Comparaison des saisons
+- Comparaison de 2 villes ou plus
+- Precipitations, causalités
+- Ajout dans onglet impact : nbr jour de gel
+- comparaison france avec autre pays tel que le Canada, l'Espagne, Australie, Norvege,... --> Agrandir la problématique (a demander a la prof)
+
 
 
 Mode elus :

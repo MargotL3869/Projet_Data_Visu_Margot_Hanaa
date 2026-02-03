@@ -353,10 +353,10 @@ def update_charts(region, ville, seuil, annee_dd, click_data, mode_elu):
 
     # G5 Heatmap
     hm = ts_ville.copy()
-    hm['Y'], hm['M'] = hm.index.year, hm.index.month
-    data_brute = hm.groupby(['Y', 'M'])['temp'].mean().unstack()
-    ref_period = hm[(hm['Y'] >= 1950) & (hm['Y'] <= 1980)]
-    data_ecart = data_brute - ref_period.groupby('M')['temp'].mean().values
+    hm['Year'], hm['Mois'] = hm.index.year, hm.index.month
+    data_brute = hm.groupby(['Year', 'Mois'])['temp'].mean().unstack()
+    ref_period = hm[(hm['Year'] >= 1950) & (hm['Year'] <= 1980)]
+    data_ecart = data_brute - ref_period.groupby('Mois')['temp'].mean().values
     fig_h = px.imshow(data_ecart, color_continuous_scale="RdBu_r", origin='lower', aspect="auto", zmin=-4, zmax=4)
     fig_h.update_layout(template="plotly_white", height=400, margin=dict(l=40, r=20, t=20, b=40))
 
